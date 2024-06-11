@@ -10,6 +10,7 @@ from tkinter import messagebox
 import customtkinter as ctk
 import re
 import ctypes
+from functools import partial
 
 
 
@@ -57,6 +58,8 @@ def Ventana_Interpolacion_Lineal(frame, ventana2, ventana):
     marco_muestra_valores.pack(fill="x", expand=False, padx=10, pady=10)
     marco_muestra_valores.grid_propagate(False)
 
+    
+
     etiqueta_ingreso_valor_inicial = ctk.CTkLabel(marco_ingreso_valores,text = "Ingrese los valores de x",font=tipo_tamaño_letra_ventana2)
     etiqueta_ingreso_valor_inicial.place(x=40,y=20)
 
@@ -75,10 +78,8 @@ def Ventana_Interpolacion_Lineal(frame, ventana2, ventana):
     necesarios = [marco_ingreso_valores, tipo_tamaño_letra_ventana2, color_texto_ventana2]
 
     ingresos_x0 =IngresarEnCadena(*necesarios, 100, 60, 2)
-    ingresos_x1 = IngresarEnCadena(*necesarios, 325, 60, 2)
+    ingresos_y = IngresarEnCadena(*necesarios, 325, 60, 2)
     
-
-
 
     ingreso_cifras_significativas = ctk.CTkEntry(marco_ingreso_valores,width=100,height=30,corner_radius=10,font = tipo_tamaño_letra_ventana2,text_color=color_texto_ventana2)
     ingreso_cifras_significativas.place(x=600,y=60)
@@ -88,6 +89,12 @@ def Ventana_Interpolacion_Lineal(frame, ventana2, ventana):
 
     ingreso_funcion = ctk.CTkEntry(marco_ingreso_valores,width=200,height=30,corner_radius=10,font = tipo_tamaño_letra_ventana2,text_color=color_texto_ventana2)
     ingreso_funcion.place(x=1100,y=60)
+
+    def Alternar_visibilidad(ingresos_y, texto):
+        boton_funcion_valores.configure(text="Valores de y")
+
+    boton_funcion_valores = ctk.CTkButton(marco_ingreso_valores,text ="Funcion",command=partial(Alternar_visibilidad, ingresos_y, etiqueta_ingreso_valor_final),fg_color = color_fondo_boton_ventana2,text_color = color_texto_ventana2,font = tipo_tamaño_letra_ventana2,height = 40,width=120,hover_color=color_boton_pasar_mouse_ventana2,border_color=color_borde_ventana2,border_width=ancho_borde_ventana2)
+    boton_funcion_valores.place(x=350 , y=225)
 
     def numero_valido(texto):
         return re.match(r"^-?\d*\.?\d*$", texto) is not None

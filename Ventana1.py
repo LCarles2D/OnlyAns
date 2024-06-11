@@ -48,10 +48,11 @@ def Activar_Metodo_Biseccion():
 
     ventana2 =ctk.CTk()
     #ventana2.iconbitmap("Imagenes/icono.ico")
-    ventana2.geometry("1500x800")
-    #ventana2.state("zoomed")
+    ventana2.attributes("-fullscreen", "True")
     ventana2.resizable(False,False)
-    ventana2.protocol("WM_DELETE_WINDOW", "onexit")  # desactivar el boton de cerrar
+    ventana2.protocol("WM_DELETE_WINDOW", "onexit")
+    ventana2.columnconfigure(0, weight=1)
+    ventana2.rowconfigure(0, weight=1)# desactivar el boton de cerrar
     ventana2.title("Metodo Biseccion") 
 
     
