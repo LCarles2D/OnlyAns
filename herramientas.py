@@ -21,5 +21,13 @@ class herramientas:
             ingresos.append(ctk.CTkEntry(marco,width=100,height=30,corner_radius=10,font = fuente,text_color=color))
             ingresos[i].place(x=x,y=(y + 30*i + 10*i))
         return ingresos
+    def has_unique_values(arr):
+        seen = set()
+        for value in arr:
+            if value in seen:
+                return False
+            seen.add(value)
+        return True
+#   
 
 

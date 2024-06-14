@@ -12,28 +12,34 @@ import customtkinter as ctk
 import re
 import ctypes
 from functools import partial
-
+from herramientas import herramientas
 
 #### Resolver
-def InterpolacionLagrange(x,y,inter_point, ecuacion = None):
-    global mostrar 
-    Xs = sp.symbols('x')
+def InterpolacionLagrange(xk,inter_point, y=None,ecuacion = None):
+    global mostrar
+    print('Ecuacion', ecuacion)
+    x = sp.symbols('x')
     if ecuacion != None:
-        y = [ecuacion.subs(x, xi).evalf() for xi in x]
-    n = len(x)
+        y = [ecuacion.subs(x, xi).evalf() for xi in xk]
+    n = len(xk)
     polinomio = 0
+    if not herramientas.has_unique_values(xk):
+        messagebox.showerror("¡ ERROR CRITICO !", message="Asegurate de ingresar valores no repetidos")
+        mostrar = False
+        return
+
     try:
         for i in range(n):
             termino = y[i]
             for j in range(n):
                 if j != i:
-                    termino *= (Xs - x[j]) / (x[i] - x[j])
+                    termino *= (x - xk[j]) / (xk[i] - xk[j])
             polinomio += termino
             
-        interpolation = polinomio.subs(Xs, inter_point).evalf()
+        interpolation = polinomio.subs(x, inter_point).evalf()
         mostrar = True
-        return sp.simplify(polinomio), interpolation
-    except:
+        return sp.simplify(polinomio), interpolation, y
+    except ZeroDivisionError:
         messagebox.showerror("¡ ERROR CRITICO !", message="Asegurate de ingresar valores no repetidos")
 
 color_fondo_boton_ventana2 = "#2c2b4b"
@@ -234,14 +240,18 @@ def Ventana_Interpolacion_Lagrange(frame, ventana2, ventana):
                 valores_x = [float(valor) for valor in valores_x]
                 interpolacion = float(interpolacion)
 
-                muestra_valores = ctk.CTkLabel(marco_muestra_valores,font= ("Currier",15,"bold"), justify= 'left', anchor='w')
+
+                muestra_valores = ctk.CTkLabel(marco_muestra_valores,font= ("Currier",15,"bold"), justify= 'left', anchor='w', wraplength=1000)
                 
-                Px, valor_aprox = InterpolacionLagrange(valores_x,valores_y,interpolacion,funcion)
-                print(Px, valor_aprox)
+                Px, valor_aprox, new_y = InterpolacionLagrange(valores_x,interpolacion, valores_y,funcion)
+                result = ''
+                for i, (val_x, val_y) in enumerate(zip(valores_x, new_y), start=1):
+                    result += f"x{i} = {val_x}, y{i} = {val_y}\n"
+
                 if valores_y == None:
-                    muestra_valores.configure(text=f'x1 = {valores_x[0]}\n\nx2 = {valores_x[1]}\n\nevaluados en f(x) = {funcion}\n\n Con un polinomio interpolador de Px = {Px} con un valor aproximado de {valor_aprox} con un punto de interpolacion de {interpolacion}')
+                    muestra_valores.configure(text=result+f'evaluados en f(x) = {funcion}\n\n Con un polinomio interpolador de Px = {Px} con un valor aproximado de {valor_aprox}')
                 else:
-                    muestra_valores.configure(text=f'x1 = {valores_x[0]}\n\nx2 = {valores_x[1]}\n\ny1 = {valores_y[0]}\n\ny2 = {valores_y[1]}\n\nCon un polinomio interpolador de Px = {Px} con un valor aproximado de {valor_aprox}')
+                    muestra_valores.configure(text=result+f'\nCon un polinomio interpolador de Px = {Px} con un valor aproximado de {valor_aprox}')
 
 
 

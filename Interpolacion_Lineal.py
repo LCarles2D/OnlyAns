@@ -25,12 +25,14 @@ def interpolacion_Lineal(xk,yk, inter_point, ecuacion = None):
     try: 
         Px = ((fx[1] - fx[0])/(xk[1] - xk[0])) * (x - xk[0]) + fx[0]
         Px = sp.simplify(Px)
+        print(xk[1] - xk[0])
 
         valor_aprox = Px.subs(x, inter_point).evalf()
         mostrar = True
         return Px, valor_aprox
-    except:
+    except ZeroDivisionError:
         messagebox.showerror("¡ ERROR CRITICO !",message="Se ha produciodo una division por cero, esto puede ser porque has ingresado el mismo valor de x si desea ocupar el mismo punto ocupa el polinomio de Hermite")
+        mostrar = False
 
 
 color_fondo_boton_ventana2 = "#2c2b4b"
