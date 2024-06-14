@@ -20,6 +20,7 @@ from Newton_Rapson import Volver,Ventana_Newton_Rapson
 from Newton_Rapson_Modificado import Volver,Ventana_Newton_Rapson_Modificado
 from Diferencias_Finitas import Volver,Ventana_Diferencias_Finitas
 from Interpolacion_Lineal import Volver,Ventana_Interpolacion_Lineal
+from InterpolacionLagrange import Volver,Ventana_Interpolacion_Lagrange
 
 
 
@@ -445,26 +446,24 @@ def Activar_Polinomio_Interpolacion_LaGrange():
     global ventana,ventana2
 
     ventana2 =ctk.CTk()
-    ventana2.iconbitmap("Imagenes/icono.ico")
     ventana2.geometry("1500x800")
-    ventana2.state("zoomed")
     ventana2.resizable(False,False)
     ventana2.protocol("WM_DELETE_WINDOW", "onexit")  # desactivar el boton de cerrar
     ventana2.title("Interpolacion de LaGrange") 
 
     
     # Deshabilitar el botón de minimizar
-    hwnd = ctypes.windll.user32.GetParent(ventana2.winfo_id())
-    current_style = ctypes.windll.user32.GetWindowLongW(hwnd, -16)
-    new_style = current_style & ~0x00020000 & ~0x00010000
-    ctypes.windll.user32.SetWindowLongW(hwnd, -16, new_style)
+    ventana.update_idletasks()  # Asegúrate de que la ventana está completamente creada
+    window_id = ventana.winfo_id()
+    os.system(f'wmctrl -ir {window_id} -b add,maximized_horz,maximized_vert') 
 
-    #Creo un frame
+   #Creo un frame
     frame = ctk.CTkFrame(master=ventana2)
     frame.pack(expand=True, fill='both')
 
 
-    #se manda a llamar la funcion
+    #se manda a llamar la funciones
+    Ventana_Interpolacion_Lagrange(frame, ventana2, ventana)
 
     ventana.withdraw()
     ventana2.protocol("WM_DELETE_WINDOW", lambda: Volver(ventana2, ventana))
