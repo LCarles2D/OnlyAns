@@ -11,7 +11,7 @@ import re
 import ctypes
 from PIL import Image, ImageTk  # Importar Image y ImageTk
 
-
+#Marvin
 from Metodo_Biseccion import Volver,Ventana_Biseccion
 from Falsa_Posicion import Volver,Ventana_Falsa_Posicion
 from Punto_Fijo import Volver,Ventana_Punto_Fijo
@@ -23,6 +23,11 @@ from Extrapolacion_Richardson import Volver,Ventana_Extrapolacion_Richardson
 from Metodo_Euler import Volver,Ventana_Metodo_Euler
 from Metodo_Euler_Modificado import Volver,Ventana_Metodo_Euler_Modificado
 from Cuadratura_Gaussiana import Volver,Ventana_Cuadratura_Gaussiana
+
+#Carles
+from Interpolacion_Lineal import Volver,Ventana_Interpolacion_Lineal
+from InterpolacionLagrange import Volver,Ventana_Interpolacion_Lagrange
+from InterpolacionCuadratica import Volver,Ventana_Interpolacion_Cuadratica
 
 
 
@@ -430,11 +435,42 @@ def Activar_Interpolacion_Lineal():
     frame.pack(expand=True, fill='both')
 
 
-    #se manda a llamar la funcion
+    Ventana_Interpolacion_Lineal(frame,ventana2,ventana)
 
     ventana.withdraw()
     ventana2.protocol("WM_DELETE_WINDOW", lambda: Volver(ventana2, ventana))
     ventana2.mainloop()
+
+
+def Activar_Interpolacion_Cuadratica():
+    global ventana,ventana2
+
+    ventana2 =ctk.CTk()
+    ventana2.iconbitmap("Imagenes/icono.ico")
+    ventana2.geometry("1500x800")
+    ventana2.state("zoomed")
+    ventana2.resizable(False,False)
+    ventana2.protocol("WM_DELETE_WINDOW", "onexit")  # desactivar el boton de cerrar
+    ventana2.title("Interpolacion Cuadratica") 
+
+    
+    # Deshabilitar el botón de minimizar
+    hwnd = ctypes.windll.user32.GetParent(ventana2.winfo_id())
+    current_style = ctypes.windll.user32.GetWindowLongW(hwnd, -16)
+    new_style = current_style & ~0x00020000 & ~0x00010000
+    ctypes.windll.user32.SetWindowLongW(hwnd, -16, new_style)
+
+    #Creo un frame
+    frame = ctk.CTkFrame(master=ventana2)
+    frame.pack(expand=True, fill='both')
+
+
+    Ventana_Interpolacion_Cuadratica(frame,ventana2,ventana)
+
+    ventana.withdraw()
+    ventana2.protocol("WM_DELETE_WINDOW", lambda: Volver(ventana2, ventana))
+    ventana2.mainloop()
+
     
 
 def Activar_Polinomio_Interpolacion_LaGrange():
@@ -460,7 +496,7 @@ def Activar_Polinomio_Interpolacion_LaGrange():
     frame.pack(expand=True, fill='both')
 
 
-    #se manda a llamar la funcion
+    Ventana_Interpolacion_Lagrange(frame,ventana2,ventana)
 
     ventana.withdraw()
     ventana2.protocol("WM_DELETE_WINDOW", lambda: Volver(ventana2, ventana))
@@ -939,6 +975,7 @@ boton_Polinomio_interpolacion_newton = None
 boton_diferencias_divididas = None
 boton_interpolacion_hermite = None
 boton_trazadores_cubicos = None
+boton_interpolacion_cuadratica = None
 
 #Botones de la unidad 4
 boton_diferenciacion_numerica = None
@@ -1185,6 +1222,7 @@ def Ventana_Principal():
         global boton_diferencias_divididas 
         global boton_interpolacion_hermite 
         global boton_trazadores_cubicos 
+        global boton_interpolacion_cuadratica
 
         global color_fondo_boton 
         global color_texto
@@ -1213,6 +1251,9 @@ def Ventana_Principal():
             boton_trazadores_cubicos = ctk.CTkButton(ventana,text = "Trazadores Cubicos",command=Activar_Trazadores_Cubicos,fg_color = color_fondo_boton,text_color = color_texto,font = tipo_tamaño_letra,height = 80,width=250,hover_color=color_boton_pasar_mouse,border_color=color_borde,border_width=ancho_borde)
             boton_trazadores_cubicos.place(x=700,y=450)
 
+            boton_interpolacion_cuadratica = ctk.CTkButton(ventana,text = "Interpolacion Cuadratica",command=Activar_Interpolacion_Cuadratica,fg_color = color_fondo_boton,text_color = color_texto,font = tipo_tamaño_letra,height = 80,width=250,hover_color=color_boton_pasar_mouse,border_color=color_borde,border_width=ancho_borde)
+            boton_interpolacion_cuadratica.place(x=400,y=550)
+
             botones_activados=True
             boton_Unidad_2.configure(state=DISABLED)
             boton_Unidad_4.configure(state=DISABLED)
@@ -1225,6 +1266,7 @@ def Ventana_Principal():
             boton_diferencias_divididas.destroy()
             boton_interpolacion_hermite.destroy()
             boton_trazadores_cubicos.destroy()
+            boton_interpolacion_cuadratica.destroy()
 
             botones_activados=False
 
