@@ -206,8 +206,16 @@ def Ventana_Hermite(frame, ventana2, ventana):
 
     def agregar_derivadas():
         global cantidad_derivadas
+        global mostrar_y
+        etiqueta_numero_derivadas.configure(text=cantidad_derivadas+1)
+
         if cantidad_derivadas > 2:
             return
+        if mostrar_y == False:
+            ingresos_derivadas[cantidad_derivadas][2] = True
+            cantidad_derivadas += 1 
+            return
+
         d_x, d_y = 825, 60
         t_x, t_y = 850, 20
         for i in range(len(ingresos_derivadas)):
@@ -216,7 +224,6 @@ def Ventana_Hermite(frame, ventana2, ventana):
             ingresos_derivadas[cantidad_derivadas][2] = True
 
         cantidad_derivadas += 1
-        etiqueta_numero_derivadas.configure(text=cantidad_derivadas)
 
     
     def eliminar_derivadas():
@@ -251,6 +258,7 @@ def Ventana_Hermite(frame, ventana2, ventana):
     def Alternar_visibilidad():
         global toggle
         global mostrar_y
+        global cantidad_derivadas
         if toggle == False:
             boton_funcion_valores.configure(text="Valores de y")
             etiqueta_ingreso_valores_y.configure(text='Funcion')
