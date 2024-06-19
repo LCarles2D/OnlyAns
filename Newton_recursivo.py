@@ -25,7 +25,7 @@ import customtkinter as ctk
 import re
 import ctypes
 from functools import partial
-from herramientas import herramientas
+from herramientas import *
 
 
 b_array = []
@@ -38,7 +38,7 @@ def Newton_recursivo(x_array, y_array=None, ecuacion = None, x_inter=None):
         raise ValueError(f'{Color.RED}ERROR | Debe de ingresar un array de "Y" o una ecuacion')
     if ecuacion != None and y_array != None:
         raise ValueError(f'{Color.RED}ERROR | Ingresas el array o ingresas la ecuacion, no se puede ambos')
-    if not herramientas.has_unique_values(x_array):
+    if not has_unique_values(x_array):
         mostrar = False
         messagebox.showerror("¡ ERROR CRITICO !", message="Asegurate de ingresar valores no repetidos")
         return
@@ -148,7 +148,6 @@ def Ventana_Newton_Recursivo(frame, ventana2, ventana):
         y_x0 = ingresos_x0[-1].winfo_y()
         ingresos_x0.append(ctk.CTkEntry(marco_ingreso_valores,width=100,height=30,corner_radius=10,font = necesarios[1],text_color=necesarios[2]))
         ingresos_x0[-1].place(x=x_x0,y=(y_x0 + 40))
-        print(mostrar_y)
         if mostrar_y == True:
             x_y0 = ingresos_y[-1].winfo_x()
             y_y0 = ingresos_y[-1].winfo_y()
@@ -243,7 +242,6 @@ def Ventana_Newton_Recursivo(frame, ventana2, ventana):
         # Finalmente, reemplazar 'e' por 'exp(1)' cuando no está seguido por '**'
         funcion_str = re.sub(r'\be\b(?![\*\w])', 'exp(1)', funcion_str) 
 
-        print('expresion', funcion_str)
         try:
             # Intenta convertir la función ingresada en una expresión sympy
             expr = sp.sympify(funcion_str)
@@ -276,13 +274,14 @@ def Ventana_Newton_Recursivo(frame, ventana2, ventana):
                     valores_y = [float(valores) for valores in valores_y]
                     funcion = None
                 else:
-                    print('La funcion', funcion)
                     booleano, funcion = Validar_y_Reemplazar_funcion(funcion)
-                    print(booleano, funcion)
                     valores_y = None
                 """else:
                     messagebox.showerror("¡ ERROR CRITICO !",message="Ingrese una  funcion valida")
                     return"""
+                if booleano == False:
+                    messagebox.showerror("Error", message='Ingrese una funcion valida')
+                    return
 
                 valores_x = [float(valor) for valor in valores_x]
                 interpolacion = float(interpolacion)
@@ -300,7 +299,6 @@ def Ventana_Newton_Recursivo(frame, ventana2, ventana):
                     muestra_valores.configure(text=result+f'\nCon un polinomio interpolador de Px = {Px} con un valor aproximado de {valor_aprox}')
 
                 if mostrar == True:
-                    print('hola')
                     muestra_valores.place(x=10,y=20)
 
                 #Se desactiva el botón de Resolver

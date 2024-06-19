@@ -1,5 +1,21 @@
+#!/usr/bin/env python3
 
-import sympy as sp 
+import sympy as sp
+
+class Color:
+    PURPLE = '\033[95m'
+    CYAN = '\033[96m'
+    DARKCYAN = '\033[36m'
+    BLUE = '\033[94m'
+    GREEN = '\033[92m'
+    YELLOW = '\033[93m'
+    RED = '\033[91m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+    END = '\033[0m'
+
+
+import sympy as sp
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -14,33 +30,74 @@ import ctypes
 from functools import partial
 from herramientas import *
 
-#### Resolver
-def InterpolacionLagrange(xk,inter_point, y=None,ecuacion = None):
+mostrar= False
+
+
+def Newton_diferencias_dividas(x_array, y_array=None, ecuacion=None, x1 = None):
     global mostrar
-    print('Ecuacion', ecuacion)
-    x = sp.symbols('x')
-    if ecuacion != None:
-        y = [ecuacion.subs(x, xi).evalf() for xi in xk]
-    n = len(xk)
-    polinomio = 0
-    if not has_unique_values(xk):
+    if not has_unique_values(x_array):
         messagebox.showerror("¡ ERROR CRITICO !", message="Asegurate de ingresar valores no repetidos")
         mostrar = False
         return
 
-    try:
-        for i in range(n):
-            termino = y[i]
-            for j in range(n):
-                if j != i:
-                    termino *= (x - xk[j]) / (xk[i] - xk[j])
-            polinomio += termino
-            
-        interpolation = polinomio.subs(x, inter_point).evalf()
+
+    if y_array == None and ecuacion == None:
+        raise ValueError(f'{Color.RED}ERROR | Debe de ingresar un array de "Y" o una ecuacion')
+    if ecuacion != None and y_array != None:
+        raise ValueError(f'{Color.RED}ERROR | Ingresas el array o ingresas la ecuacion, no se puede ambos')
+
+    x = sp.symbols("x")
+    fx_array = y_array or [ecuacion.subs(x,xi).evalf() for xi in x_array] #Nivel 0
+#fx_array = [278, -242, 1430, 908, 40]
+    grado = len(x_array) - 1
+    nivel = [fx_array] + [[] for i in range(grado)]
+
+#Conseguir las constantes b
+    for i in range(1, grado+1):
+        for j in range(1, (len(x_array)+1)-i):
+            b = (nivel[i-1][j] - nivel[i-1][j-1])/(x_array[j+(i-1)] - x_array[j-1])
+            nivel[i].append(b)
+
+    b_array = [nivel[i][0] for i in range(0,grado+1)]
+    factor = [1 for i in range(0, grado)]
+
+    Px = b_array[0]
+    for i in range(1, grado+1):
+        for j in range(0,i):
+            factor[i-1] = (factor[i-1] * (x - x_array[j]))
+        Px +=  b_array[i] * factor[i-1]
+
+    Px = sp.expand(Px)
+    Px = sp.simplify(Px)
+    respuesta = f"El polinomio interpolador resultante P(x) por el metodo de diferencias dividas que coincide con la función {Color.BOLD}F(x)= {ecuacion}{Color.END} en los puntos{Color.BOLD} "
+    puntos = ""
+    for i in range(0, len(x_array)):
+        puntos += f"x={x_array[i]}, "
+    respuesta += puntos
+
+    if ecuacion == None:
         mostrar = True
-        return sp.simplify(polinomio), interpolation, y
-    except ZeroDivisionError:
-        messagebox.showerror("¡ ERROR CRITICO !", message="Asegurate de ingresar valores no repetidos")
+        return Px, Px.subs(x,x1).evalf(), fx_array, ''
+#COnseguir errores. Ea:
+    valor_verdadero = ecuacion.subs(x, x1).evalf()
+    valor_aprox = Px.subs(x, x1).evalf()
+    Ea = ((valor_verdadero - valor_aprox)/(valor_verdadero))*100
+
+
+#Consiguiendo el error teorico
+    ecuacion_derivada = ecuacion 
+#Conseguir derivadas
+    for i in range(grado+1):
+        ecuacion_derivada = sp.diff(ecuacion_derivada)
+#Consiguiendo el factor
+    factor = 1
+    for i in range(0, grado):
+        factor *= x1 - x_array[i]
+
+    error_t = ((ecuacion_derivada.subs(x,x1).evalf())/sp.factorial(grado+1)) * factor
+    mostrar = True
+    return Px, valor_verdadero,fx_array, f'Con un error porcentual de {Ea} y un error teorico de {error_t}'
+
 
 color_fondo_boton_ventana2 = "#2c2b4b"
 color_texto_ventana2 = "white"
@@ -53,7 +110,9 @@ toggle = False
 mostrar_y = True
 
 
-def Ventana_Interpolacion_Lagrange(frame, ventana2, ventana):
+
+
+def Ventana_Newton_diferencias(frame, ventana2, ventana):
     global toggle
     global marco_muestra_valores
     global canvas
@@ -101,7 +160,6 @@ def Ventana_Interpolacion_Lagrange(frame, ventana2, ventana):
         y_x0 = ingresos_x0[-1].winfo_y()
         ingresos_x0.append(ctk.CTkEntry(marco_ingreso_valores,width=100,height=30,corner_radius=10,font = necesarios[1],text_color=necesarios[2]))
         ingresos_x0[-1].place(x=x_x0,y=(y_x0 + 40))
-        print(mostrar_y)
         if mostrar_y == True:
             x_y0 = ingresos_y[-1].winfo_x()
             y_y0 = ingresos_y[-1].winfo_y()
@@ -196,7 +254,6 @@ def Ventana_Interpolacion_Lagrange(frame, ventana2, ventana):
         # Finalmente, reemplazar 'e' por 'exp(1)' cuando no está seguido por '**'
         funcion_str = re.sub(r'\be\b(?![\*\w])', 'exp(1)', funcion_str) 
 
-        print('expresion', funcion_str)
         try:
             # Intenta convertir la función ingresada en una expresión sympy
             expr = sp.sympify(funcion_str)
@@ -229,33 +286,33 @@ def Ventana_Interpolacion_Lagrange(frame, ventana2, ventana):
                     valores_y = [float(valores) for valores in valores_y]
                     funcion = None
                 else:
-                    print('La funcion', funcion)
                     booleano, funcion = Validar_y_Reemplazar_funcion(funcion)
-                    print(booleano, funcion)
                     valores_y = None
                 """else:
                     messagebox.showerror("¡ ERROR CRITICO !",message="Ingrese una  funcion valida")
                     return"""
 
+                if booleano == False:
+                    messagebox.showerror('ERROR', message='Ingrese una funcion valida')
+                    return
                 valores_x = [float(valor) for valor in valores_x]
                 interpolacion = float(interpolacion)
 
-
                 muestra_valores = ctk.CTkLabel(marco_muestra_valores,font= ("Currier",15,"bold"), justify= 'left', anchor='w', wraplength=1000)
                 
-                Px, valor_aprox, new_y = InterpolacionLagrange(valores_x,interpolacion, valores_y,funcion)
+                Px, valor_aprox, new_y, err_string = Newton_diferencias_dividas(valores_x, valores_y, funcion, interpolacion)
+ #def Newton_recursivo(x_array, y_array=None, ecuacion = None, x_inter=Non:
                 result = ''
                 for i, (val_x, val_y) in enumerate(zip(valores_x, new_y), start=1):
                     result += f"x{i} = {val_x}, y{i} = {val_y}\n"
 
                 if valores_y == None:
-                    muestra_valores.configure(text=result+f'evaluados en f(x) = {funcion}\n\n Con un polinomio interpolador de Px = {Px} con un valor aproximado de {valor_aprox}')
+                    muestra_valores.configure(text=result+f'evaluados en f(x) = {funcion}\n\n Con un polinomio interpolador de Px = {Px} con un valor aproximado de {valor_aprox}{err_string}')
                 else:
-                    muestra_valores.configure(text=result+f'\nCon un polinomio interpolador de Px = {Px} con un valor aproximado de {valor_aprox}')
-
-
+                    muestra_valores.configure(text=result+f'\nCon un polinomio interpolador de Px = {Px} con un valor aproximado de {valor_aprox}{err_string}')
 
                 if mostrar == True:
+                    print(mostrar)
                     muestra_valores.place(x=10,y=20)
 
                 #Se desactiva el botón de Resolver
@@ -310,6 +367,5 @@ def Limpiar():
     # Iterar sobre los widgets y destruirlos uno por uno
     for widget in marco_muestra_valores.winfo_children():
         widget.destroy()
-
 
 
