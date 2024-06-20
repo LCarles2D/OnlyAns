@@ -23,11 +23,11 @@ from Extrapolacion_Richardson import Volver,Ventana_Extrapolacion_Richardson
 from Metodo_Euler import Volver,Ventana_Metodo_Euler
 from Metodo_Euler_Modificado import Volver,Ventana_Metodo_Euler_Modificado
 from Cuadratura_Gaussiana import Volver,Ventana_Cuadratura_Gaussiana
+from Metodo_Boyle import Volver,Ventana_Metodo_Boyle
 
 #Carles
 from Interpolacion_Lineal import Volver,Ventana_Interpolacion_Lineal
 from InterpolacionLagrange import Volver,Ventana_Interpolacion_Lagrange
-from InterpolacionCuadratica import Volver,Ventana_Interpolacion_Cuadratica
 from Newton_diferencias_dividas import Volver,Ventana_Newton_diferencias
 from Newton_recursivo import Volver,Ventana_Newton_Recursivo
 from Trazadores_cubicos import Volver,Ventana_Trazadores_Cubicos
@@ -757,6 +757,36 @@ def Activar_Cuadratura_Gaussiana():
     ventana.withdraw()
     ventana2.protocol("WM_DELETE_WINDOW", lambda: Volver(ventana2, ventana))
     ventana2.mainloop()
+
+
+def Activar_Metodo_Boyle():
+    global ventana,ventana2
+
+    ventana2 =ctk.CTk()
+    ventana2.iconbitmap("Imagenes/icono.ico")
+    ventana2.geometry("1500x800")
+    ventana2.state("zoomed")
+    ventana2.resizable(False,False)
+    ventana2.protocol("WM_DELETE_WINDOW", "onexit")  # desactivar el boton de cerrar
+    ventana2.title("Metodo Boyle") 
+
+    
+    # Deshabilitar el botón de minimizar
+    hwnd = ctypes.windll.user32.GetParent(ventana2.winfo_id())
+    current_style = ctypes.windll.user32.GetWindowLongW(hwnd, -16)
+    new_style = current_style & ~0x00020000 & ~0x00010000
+    ctypes.windll.user32.SetWindowLongW(hwnd, -16, new_style)
+
+    #Creo un frame
+    frame = ctk.CTkFrame(master=ventana2)
+    frame.pack(expand=True, fill='both')
+
+
+    Ventana_Metodo_Boyle(frame,ventana2,ventana)
+
+    ventana.withdraw()
+    ventana2.protocol("WM_DELETE_WINDOW", lambda: Volver(ventana2, ventana))
+    ventana2.mainloop()
     
 
 
@@ -967,6 +997,7 @@ boton_extrapolacion_richardson = None
 boton_integracion_numerica = None
 boton_metodos_adaptativos = None
 boton_cuadratura_gaussiana = None
+boton_metodo_boyle = None
 
 #Botones de la unidad 5
 boton_metodo_euler = None
@@ -1146,6 +1177,7 @@ def Ventana_Principal():
         global boton_integracion_numerica 
         global boton_metodos_adaptativos
         global boton_cuadratura_gaussiana
+        global boton_metodo_boyle
 
         global color_fondo_boton 
         global color_texto
@@ -1165,10 +1197,13 @@ def Ventana_Principal():
             boton_integracion_numerica.place(x=700,y=450)
 
             boton_metodos_adaptativos = ctk.CTkButton(ventana,text = "Metodos Adaptativos",command=Activar_Metodos_Adaptativos,fg_color = color_fondo_boton,text_color = color_texto,font = tipo_tamaño_letra,height = 80,width=250,hover_color=color_boton_pasar_mouse,border_color=color_borde,border_width=ancho_borde)
-            boton_metodos_adaptativos.place(x=1000,y=300)
+            boton_metodos_adaptativos.place(x=1000,y=250)
 
             boton_cuadratura_gaussiana = ctk.CTkButton(ventana,text = "Cuadratura Gaussiana",command=Activar_Cuadratura_Gaussiana,fg_color = color_fondo_boton,text_color = color_texto,font = tipo_tamaño_letra,height = 80,width=250,hover_color=color_boton_pasar_mouse,border_color=color_borde,border_width=ancho_borde)
-            boton_cuadratura_gaussiana.place(x=1000,y=400)
+            boton_cuadratura_gaussiana.place(x=1000,y=350)
+
+            boton_metodo_boyle = ctk.CTkButton(ventana,text = "Metodo Boyle",command=Activar_Metodo_Boyle,fg_color = color_fondo_boton,text_color = color_texto,font = tipo_tamaño_letra,height = 80,width=250,hover_color=color_boton_pasar_mouse,border_color=color_borde,border_width=ancho_borde)
+            boton_metodo_boyle.place(x=1000,y=450)
 
             botones_activados=True
 
@@ -1183,6 +1218,7 @@ def Ventana_Principal():
             boton_integracion_numerica.destroy() 
             boton_metodos_adaptativos.destroy()
             boton_cuadratura_gaussiana.destroy()
+            boton_metodo_boyle.destroy()
 
             botones_activados=False
 
