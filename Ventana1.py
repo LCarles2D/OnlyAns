@@ -28,6 +28,21 @@ from Cuadratura_Gaussiana import Volver,Ventana_Cuadratura_Gaussiana
 from Interpolacion_Lineal import Volver,Ventana_Interpolacion_Lineal
 from InterpolacionLagrange import Volver,Ventana_Interpolacion_Lagrange
 from InterpolacionCuadratica import Volver,Ventana_Interpolacion_Cuadratica
+from Newton_diferencias_dividas import Volver,Ventana_Newton_diferencias
+from Newton_recursivo import Volver,Ventana_Newton_Recursivo
+from Trazadores_cubicos import Volver,Ventana_Trazadores_Cubicos
+from hermite import Volver,Ventana_Hermite
+
+#Henry
+from Metodo_EcuacionesCuadraticas import Volver, Ventana_Ecuaciones_Cuadraticas     
+from Metodo_Tartaglia import Volver, Ventana_Metodo_Tartaglia                       
+from Metodo_Ferrari import Volver, Ventana_Metodo_Ferrari                           
+from Metodo_Horner import Volver, Ventana_Metodo_Horner                             
+from Metodo_Bairstow import Volver, Ventana_Metodo_Bairstow                         
+from Metodo_Muller import Volver, Ventana_Metodo_Muller                             
+
+
+
 
 
 
@@ -50,7 +65,7 @@ frame = None
 
 #-------------------Creo funciones para activar cada metodo dependiendo cual se seleccione------------------------------------------
 
-def Activar_Metodo_Biseccion():
+def Activar_Metodo_Biseccion():#✅
     global ventana,ventana2
 
     ventana2 =ctk.CTk()
@@ -80,7 +95,7 @@ def Activar_Metodo_Biseccion():
     ventana2.mainloop() 
     
     
-def Activar_Falsa_Posicion():
+def Activar_Falsa_Posicion():#✅
     global ventana,ventana2
 
     ventana2 =ctk.CTk()
@@ -110,7 +125,7 @@ def Activar_Falsa_Posicion():
     ventana2.mainloop()
     
 
-def Activar_Punto_Fijo():
+def Activar_Punto_Fijo():#✅
     global ventana,ventana2
 
     ventana2 =ctk.CTk()
@@ -140,7 +155,7 @@ def Activar_Punto_Fijo():
     ventana2.mainloop()
     
 
-def Activar_Metodo_Secante():
+def Activar_Metodo_Secante():#✅
     global ventana,ventana2
 
     ventana2 =ctk.CTk()
@@ -170,7 +185,7 @@ def Activar_Metodo_Secante():
     ventana2.mainloop()
     
 
-def Activar_Newton_Raphson():
+def Activar_Newton_Raphson():#✅
     global ventana,ventana2
 
     ventana2 =ctk.CTk()
@@ -200,7 +215,7 @@ def Activar_Newton_Raphson():
     ventana2.mainloop()
     
 
-def Activar_Newton_Raphson_Modificado():
+def Activar_Newton_Raphson_Modificado():#✅
     global ventana,ventana2
 
     ventana2 =ctk.CTk()
@@ -230,7 +245,7 @@ def Activar_Newton_Raphson_Modificado():
     ventana2.mainloop()
     
 
-def Activar_Ecuaciones_Cuadraticas():
+def Activar_Ecuaciones_Cuadraticas():#✅
     global ventana,ventana2
 
     ventana2 =ctk.CTk()
@@ -253,14 +268,14 @@ def Activar_Ecuaciones_Cuadraticas():
     frame.pack(expand=True, fill='both')
 
 
-    #Ventana_Ecuaciones_Cuadraticas(frame,ventana2,ventana)
+    Ventana_Ecuaciones_Cuadraticas(frame,ventana2,ventana)
 
     ventana.withdraw()
     ventana2.protocol("WM_DELETE_WINDOW", lambda: Volver(ventana2, ventana))
     ventana2.mainloop()
     
 
-def Activar_Metodo_Tartaglia():
+def Activar_Metodo_Tartaglia():#✅
     global ventana,ventana2
 
     ventana2 =ctk.CTk()
@@ -283,14 +298,14 @@ def Activar_Metodo_Tartaglia():
     frame.pack(expand=True, fill='both')
 
 
-    #se manda a llamar la funcion
+    Ventana_Metodo_Tartaglia(frame,ventana2,ventana)
 
     ventana.withdraw()
     ventana2.protocol("WM_DELETE_WINDOW", lambda: Volver(ventana2, ventana))
     ventana2.mainloop()
     
 
-def Activar_Metodo_Ferrari():
+def Activar_Metodo_Ferrari():#✅
     global ventana,ventana2
 
     ventana2 =ctk.CTk()
@@ -313,14 +328,14 @@ def Activar_Metodo_Ferrari():
     frame.pack(expand=True, fill='both')
 
 
-    #se manda a llamar la funcion
+    Ventana_Metodo_Ferrari(frame,ventana2,ventana)
 
     ventana.withdraw()
     ventana2.protocol("WM_DELETE_WINDOW", lambda: Volver(ventana2, ventana))
     ventana2.mainloop()
     
 
-def Activar_Metodo_Horner():
+def Activar_Metodo_Horner():#✅
     global ventana,ventana2
 
     ventana2 =ctk.CTk()
@@ -343,14 +358,14 @@ def Activar_Metodo_Horner():
     frame.pack(expand=True, fill='both')
 
 
-    #se manda a llamar la funcion
+    Ventana_Metodo_Horner(frame,ventana2,ventana)
 
     ventana.withdraw()
     ventana2.protocol("WM_DELETE_WINDOW", lambda: Volver(ventana2, ventana))
     ventana2.mainloop()
     
 
-def Activar_Metodo_Bairstown():
+def Activar_Metodo_Bairstown():#✅
     global ventana,ventana2
 
     ventana2 =ctk.CTk()
@@ -373,14 +388,14 @@ def Activar_Metodo_Bairstown():
     frame.pack(expand=True, fill='both')
 
 
-    #se manda a llamar la funcion
+    Ventana_Metodo_Bairstow(frame,ventana2,ventana)
 
     ventana.withdraw()
     ventana2.protocol("WM_DELETE_WINDOW", lambda: Volver(ventana2, ventana))
     ventana2.mainloop()
     
 
-def Activar_Metodo_Muller():
+def Activar_Metodo_Muller():#✅
     global ventana,ventana2
 
     ventana2 =ctk.CTk()
@@ -403,7 +418,7 @@ def Activar_Metodo_Muller():
     frame.pack(expand=True, fill='both')
 
 
-    #se manda a llamar la funcion
+    Ventana_Metodo_Muller(frame,ventana2,ventana) 
 
     ventana.withdraw()
     ventana2.protocol("WM_DELETE_WINDOW", lambda: Volver(ventana2, ventana))
@@ -412,7 +427,7 @@ def Activar_Metodo_Muller():
 
 
 
-def Activar_Interpolacion_Lineal():
+def Activar_Interpolacion_Lineal():#✅
     global ventana,ventana2
 
     ventana2 =ctk.CTk()
@@ -442,7 +457,7 @@ def Activar_Interpolacion_Lineal():
     ventana2.mainloop()
 
 
-def Activar_Interpolacion_Cuadratica():
+def Activar_Interpolacion_Cuadratica():#✅
     global ventana,ventana2
 
     ventana2 =ctk.CTk()
@@ -473,7 +488,7 @@ def Activar_Interpolacion_Cuadratica():
 
     
 
-def Activar_Polinomio_Interpolacion_LaGrange():
+def Activar_Polinomio_Interpolacion_LaGrange():#✅
     global ventana,ventana2
 
     ventana2 =ctk.CTk()
@@ -503,7 +518,7 @@ def Activar_Polinomio_Interpolacion_LaGrange():
     ventana2.mainloop()
     
 
-def Activar_Polinomio_Interpolacion_Newton():
+def Activar_Polinomio_Interpolacion_Newton():#✅
     global ventana,ventana2
 
     ventana2 =ctk.CTk()
@@ -526,14 +541,14 @@ def Activar_Polinomio_Interpolacion_Newton():
     frame.pack(expand=True, fill='both')
 
 
-    #se manda a llamar la funcion
+    Ventana_Newton_Recursivo(frame,ventana2,ventana)
 
     ventana.withdraw()
     ventana2.protocol("WM_DELETE_WINDOW", lambda: Volver(ventana2, ventana))
     ventana2.mainloop()
     
 
-def Activar_Diferencias_Divididas():
+def Activar_Diferencias_Divididas():#✅
     global ventana,ventana2
 
     ventana2 =ctk.CTk()
@@ -556,14 +571,14 @@ def Activar_Diferencias_Divididas():
     frame.pack(expand=True, fill='both')
 
 
-    #se manda a llamar la funcion
+    Ventana_Newton_diferencias(frame,ventana2,ventana)
 
     ventana.withdraw()
     ventana2.protocol("WM_DELETE_WINDOW", lambda: Volver(ventana2, ventana))
     ventana2.mainloop()
     
 
-def Activar_Interpolacion_Hermite():
+def Activar_Interpolacion_Hermite():#✅
     global ventana,ventana2
 
     ventana2 =ctk.CTk()
@@ -586,14 +601,14 @@ def Activar_Interpolacion_Hermite():
     frame.pack(expand=True, fill='both')
 
 
-    #se manda a llamar la funcion
+    Ventana_Hermite(frame,ventana2,ventana)
 
     ventana.withdraw()
     ventana2.protocol("WM_DELETE_WINDOW", lambda: Volver(ventana2, ventana))
     ventana2.mainloop()
     
 
-def Activar_Trazadores_Cubicos():
+def Activar_Trazadores_Cubicos():#✅
     global ventana,ventana2
 
     ventana2 =ctk.CTk()
@@ -616,7 +631,7 @@ def Activar_Trazadores_Cubicos():
     frame.pack(expand=True, fill='both')
 
 
-    #se manda a llamar la funcion
+    Ventana_Trazadores_Cubicos(frame,ventana2,ventana)
 
     ventana.withdraw()
     ventana2.protocol("WM_DELETE_WINDOW", lambda: Volver(ventana2, ventana))
@@ -624,7 +639,7 @@ def Activar_Trazadores_Cubicos():
     
 
 
-def Activar_Diferenciacion_Numerica():
+def Activar_Diferenciacion_Numerica():#✅
     global ventana,ventana2
 
     ventana2 =ctk.CTk()
@@ -655,7 +670,7 @@ def Activar_Diferenciacion_Numerica():
     
     
 
-def Activar_Extrapolacion_Richardson():
+def Activar_Extrapolacion_Richardson():#✅
     global ventana,ventana2
 
     ventana2 =ctk.CTk()
@@ -776,7 +791,7 @@ def Activar_Cuadratura_Gaussiana():
     
 
 
-def Activar_Metodo_Euler_Completo():
+def Activar_Metodo_Euler_Completo():#✅
     global ventana,ventana2
 
     ventana2 =ctk.CTk()
@@ -805,7 +820,7 @@ def Activar_Metodo_Euler_Completo():
 
     ventana2.mainloop()
 
-def Activar_Metodo_Euler_Modificado():
+def Activar_Metodo_Euler_Modificado():#✅
     global ventana,ventana2
 
     ventana2 =ctk.CTk()

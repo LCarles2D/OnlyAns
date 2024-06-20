@@ -1,4 +1,20 @@
 #!/usr/bin/env python3
+
+import sympy as sp
+
+class Color:
+    PURPLE = '\033[95m'
+    CYAN = '\033[96m'
+    DARKCYAN = '\033[36m'
+    BLUE = '\033[94m'
+    GREEN = '\033[92m'
+    YELLOW = '\033[93m'
+    RED = '\033[91m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+    END = '\033[0m'
+
+
 import sympy as sp
 import pandas as pd
 import numpy as np
@@ -12,35 +28,77 @@ import customtkinter as ctk
 import re
 import ctypes
 from functools import partial
-import sympy as sp
+from herramientas import *
 
-######## FUNCIONES PARA RESOLVER
-def get_Bn(n1, n2, puntos, fx):
-    return (fx[n2] - fx[n1])/(puntos[n2] - puntos[n1])
+mostrar= False
 
 
-def interpolacionCuadratica(xk,yk, inter_point, ecuacion = None):
+def Newton_diferencias_dividas(x_array, y_array=None, ecuacion=None, x1 = None):
+    global mostrar
+    if not has_unique_values(x_array):
+        messagebox.showerror("¡ ERROR CRITICO !", message="Asegurate de ingresar valores no repetidos")
+        mostrar = False
+        return
 
-    
+
+    if y_array == None and ecuacion == None:
+        raise ValueError(f'{Color.RED}ERROR | Debe de ingresar un array de "Y" o una ecuacion')
+    if ecuacion != None and y_array != None:
+        raise ValueError(f'{Color.RED}ERROR | Ingresas el array o ingresas la ecuacion, no se puede ambos')
+
     x = sp.symbols("x")
-    if ecuacion != None:
-        yk = [ecuacion.subs(x, xi).evalf() for xi in xk]
+    fx_array = y_array or [ecuacion.subs(x,xi).evalf() for xi in x_array] #Nivel 0
+#fx_array = [278, -242, 1430, 908, 40]
+    grado = len(x_array) - 1
+    nivel = [fx_array] + [[] for i in range(grado)]
 
-  
-    fx = yk
-    b0 = fx[0]
+#Conseguir las constantes b
+    for i in range(1, grado+1):
+        for j in range(1, (len(x_array)+1)-i):
+            b = (nivel[i-1][j] - nivel[i-1][j-1])/(x_array[j+(i-1)] - x_array[j-1])
+            nivel[i].append(b)
 
-    b1 = get_Bn(0, 1, xk, fx)
-    b2 = (get_Bn(1,2, xk, fx) - b1) / (xk[2] - xk[0])
-    Px = b0 + b1*(x - xk[0]) + b2*(x-xk[0])*(x-xk[1])
+    b_array = [nivel[i][0] for i in range(0,grado+1)]
+    factor = [1 for i in range(0, grado)]
+
+    Px = b_array[0]
+    for i in range(1, grado+1):
+        for j in range(0,i):
+            factor[i-1] = (factor[i-1] * (x - x_array[j]))
+        Px +=  b_array[i] * factor[i-1]
+
+    Px = sp.expand(Px)
     Px = sp.simplify(Px)
+    respuesta = f"El polinomio interpolador resultante P(x) por el metodo de diferencias dividas que coincide con la función {Color.BOLD}F(x)= {ecuacion}{Color.END} en los puntos{Color.BOLD} "
+    puntos = ""
+    for i in range(0, len(x_array)):
+        puntos += f"x={x_array[i]}, "
+    respuesta += puntos
 
-    valor_aprox = Px.subs(x, inter_point).evalf()
-    return Px, valor_aprox
+    if ecuacion == None:
+        mostrar = True
+        return Px, Px.subs(x,x1).evalf(), fx_array, ''
+#COnseguir errores. Ea:
+    valor_verdadero = ecuacion.subs(x, x1).evalf()
+    valor_aprox = Px.subs(x, x1).evalf()
+    Ea = ((valor_verdadero - valor_aprox)/(valor_verdadero))*100
 
 
-######## INTERFAZ
-#Variables
+#Consiguiendo el error teorico
+    ecuacion_derivada = ecuacion 
+#Conseguir derivadas
+    for i in range(grado+1):
+        ecuacion_derivada = sp.diff(ecuacion_derivada)
+#Consiguiendo el factor
+    factor = 1
+    for i in range(0, grado):
+        factor *= x1 - x_array[i]
+
+    error_t = ((ecuacion_derivada.subs(x,x1).evalf())/sp.factorial(grado+1)) * factor
+    mostrar = True
+    return Px, valor_verdadero,fx_array, f'Con un error porcentual de {Ea} y un error teorico de {error_t}'
+
+
 color_fondo_boton_ventana2 = "#2c2b4b"
 color_texto_ventana2 = "white"
 tipo_tamaño_letra_ventana2 = ("Currier",12,"bold")
@@ -49,8 +107,12 @@ color_boton_pasar_mouse_ventana2 = "#5603b6"
 color_borde_ventana2  = "white"
 ancho_borde_ventana2 = 2
 toggle = False
+mostrar_y = True
 
-def Ventana_Interpolacion_Cuadratica(frame, ventana2, ventana):
+
+
+
+def Ventana_Newton_diferencias(frame, ventana2, ventana):
     global toggle
     global marco_muestra_valores
     global canvas
@@ -61,7 +123,7 @@ def Ventana_Interpolacion_Cuadratica(frame, ventana2, ventana):
     global boton_limpiar,boton_resolver
 
     ########### Marcos
-    marco_height = 300
+    marco_height = 460
     marco_ingreso_valores = ctk.CTkFrame(frame, width=0, height=marco_height, corner_radius=10)
     marco_ingreso_valores.pack(fill="x", expand=False, padx=10, pady=0)
     marco_ingreso_valores.grid_propagate(False)
@@ -82,42 +144,84 @@ def Ventana_Interpolacion_Cuadratica(frame, ventana2, ventana):
 
     necesarios = [marco_ingreso_valores, tipo_tamaño_letra_ventana2, color_texto_ventana2]
     
-    ############# Entrada de valores
+    ############# ingresos_y de valores
     ingresos_x0 =IngresarEnCadena(*necesarios, 100, 60, 2)
     ingresos_y = IngresarEnCadena(*necesarios, 325, 60, 2)
-    
 
     ingreso_interpolacion = ctk.CTkEntry(marco_ingreso_valores,width=100,height=30,corner_radius=10,font = tipo_tamaño_letra_ventana2,text_color=color_texto_ventana2)
     ingreso_interpolacion.place(x=600,y=60)
+
+    
+    def agregar_ingresos_ys():
+        global mostrar_y
+        if len(ingresos_x0) > 7:
+            return
+        x_x0 = ingresos_x0[-1].winfo_x()
+        y_x0 = ingresos_x0[-1].winfo_y()
+        ingresos_x0.append(ctk.CTkEntry(marco_ingreso_valores,width=100,height=30,corner_radius=10,font = necesarios[1],text_color=necesarios[2]))
+        ingresos_x0[-1].place(x=x_x0,y=(y_x0 + 40))
+        if mostrar_y == True:
+            x_y0 = ingresos_y[-1].winfo_x()
+            y_y0 = ingresos_y[-1].winfo_y()
+            ingresos_y.append(ctk.CTkEntry(marco_ingreso_valores,width=100,height=30,corner_radius=10,font = necesarios[1],text_color=necesarios[2]))
+            ingresos_y[-1].place(x=x_y0,y=(y_y0 + 40))
+        else:
+            x_y0 = ingresos_y[-1].winfo_x()
+            y_y0 = ingresos_y[-1].winfo_y()
+            ingresos_y.append(ctk.CTkEntry(marco_ingreso_valores,width=100,height=30,corner_radius=10,font = necesarios[1],text_color=necesarios[2]))
+
+
+
+
+    def eliminar_ingresos_ys():
+        if len(ingresos_x0) <= 2:
+            return
+        ingresos_x0[-1].delete(0, END) 
+        ingresos_x0[-1].place_forget()
+        ingresos_x0.pop()
+        ingresos_y[-1].delete(0, END) 
+        ingresos_y[-1].place_forget()
+        ingresos_y.pop()
+
+                
+
+    boton_agregar = ctk.CTkButton(marco_ingreso_valores,text ="-",command=eliminar_ingresos_ys,fg_color = color_fondo_boton_ventana2,text_color = color_texto_ventana2,font = tipo_tamaño_letra_ventana2,height = 40,width=50,hover_color=color_boton_pasar_mouse_ventana2,border_color=color_borde_ventana2,border_width=ancho_borde_ventana2)
+    boton_agregar.place(x=500,y=400)
+    boton_eliminar = ctk.CTkButton(marco_ingreso_valores,text ="+",command=agregar_ingresos_ys,fg_color = color_fondo_boton_ventana2,text_color = color_texto_ventana2,font = tipo_tamaño_letra_ventana2,height = 40,width=50,hover_color=color_boton_pasar_mouse_ventana2,border_color=color_borde_ventana2,border_width=ancho_borde_ventana2)
+    boton_eliminar.place(x=555,y=400)
+
 
 
     ingreso_funcion = ctk.CTkEntry(marco_ingreso_valores,width=200,height=30,corner_radius=10,font = tipo_tamaño_letra_ventana2,text_color=color_texto_ventana2)
 
 
     ########### Alternar entre funcion y valores de y 
-    def Alternar_visibilidad(entradas):
+    def Alternar_visibilidad():
         global toggle
+        global mostrar_y
         if toggle == False:
             boton_funcion_valores.configure(text="Valores de y")
             etiqueta_ingreso_valores_y.configure(text='Funcion')
             toggle = True
             ingreso_funcion.place(x=325,y=60)
+            mostrar_y = False
 
-            for entrada in entradas:
-                entrada.delete(0, END)
-                entrada.place_forget()
+            for ingreso in ingresos_y:
+                ingreso.delete(0, END)
+                ingreso.place_forget()
         else:
             boton_funcion_valores.configure(text='Funcion')
             etiqueta_ingreso_valores_y.configure(text='Valores de y')
             toggle= False
             ingreso_funcion.delete(0, END)
             ingreso_funcion.place_forget()
+            mostrar_y = True
             
-            for i in range(0,len(entradas)):        
-                entradas[i].place(x=325,y=(60 + 30*i + 10*i))
+            for i in range(0,len(ingresos_y)):        ################ CAMBIAR ENTRY POR BOTON
+                ingresos_y[i].place(x=325,y=(60 + 30*i + 10*i))
 
-    boton_funcion_valores = ctk.CTkButton(marco_ingreso_valores,text ="Funcion",command=partial(Alternar_visibilidad, ingresos_y),fg_color = color_fondo_boton_ventana2,text_color = color_texto_ventana2,font = tipo_tamaño_letra_ventana2,height = 40,width=120,hover_color=color_boton_pasar_mouse_ventana2,border_color=color_borde_ventana2,border_width=ancho_borde_ventana2)
-    boton_funcion_valores.place(x=350 , y=225)
+    boton_funcion_valores = ctk.CTkButton(marco_ingreso_valores,text ="Funcion",command=Alternar_visibilidad,fg_color = color_fondo_boton_ventana2,text_color = color_texto_ventana2,font = tipo_tamaño_letra_ventana2,height = 40,width=120,hover_color=color_boton_pasar_mouse_ventana2,border_color=color_borde_ventana2,border_width=ancho_borde_ventana2)
+    boton_funcion_valores.place(x=350 , y=400)
 
 
     def numero_valido(texto):
@@ -129,11 +233,11 @@ def Ventana_Interpolacion_Cuadratica(frame, ventana2, ventana):
     
     def Convertir_Funcion(funcion):
         try:
-            #Intenta convertir la entrada en una expresion simbolica
+            #Intenta convertir la ingresos_y en una expresion simbolica
             sp.sympify(funcion)
             return True
         except (sp.SympifyError, TypeError,SyntaxError):
-            #Si hay un error en la sintaxis la entrada no es valida
+            #Si hay un error en la sintaxis la ingresos_y no es valida
             return False
     def Validar_y_Reemplazar_funcion(funcion_str):
         x= sp.symbols('x')
@@ -150,7 +254,6 @@ def Ventana_Interpolacion_Cuadratica(frame, ventana2, ventana):
         # Finalmente, reemplazar 'e' por 'exp(1)' cuando no está seguido por '**'
         funcion_str = re.sub(r'\be\b(?![\*\w])', 'exp(1)', funcion_str) 
 
-        print('expresion', funcion_str)
         try:
             # Intenta convertir la función ingresada en una expresión sympy
             expr = sp.sympify(funcion_str)
@@ -171,9 +274,16 @@ def Ventana_Interpolacion_Cuadratica(frame, ventana2, ventana):
         valores_y = [ingreso.get() for ingreso in ingresos_y]
         interpolacion = ingreso_interpolacion.get()
         funcion = ingreso_funcion.get()
-
-        #Si estan vacios todos
-        if (valores_x[0] == '' or valores_x[1] == '' or interpolacion == '') or ((valores_y[0] == '' or valores_y[1] == '') and funcion == '') :
+        x_llenados = False
+        y_llenados = False
+        derivada_llenado = False
+        for i in range(len(valores_x)):
+            if (valores_x[i] == ''):
+                x_llenados = True
+            if (valores_y[i] == ''):
+                y_llenados = True
+       #Si estan vacios todos
+        if (x_llenados == True or interpolacion == '') or (y_llenados == True and funcion == '') :
             messagebox.showerror("¡ ERROR CRITICO !",message="Debe llenar todos los campos de forma correcta")
         else:
             
@@ -183,29 +293,30 @@ def Ventana_Interpolacion_Cuadratica(frame, ventana2, ventana):
                     valores_y = [float(valores) for valores in valores_y]
                     funcion = None
                 else:
-                    print('La funcion', funcion)
                     booleano, funcion = Validar_y_Reemplazar_funcion(funcion)
-                    print(booleano, funcion)
                     valores_y = None
-                """else:
-                    messagebox.showerror("¡ ERROR CRITICO !",message="Ingrese una  funcion valida")
-                    return"""
+                    if booleano == False:
+                        messagebox.showerror('ERROR', message='Ingrese una funcion valida')
+                        return
 
                 valores_x = [float(valor) for valor in valores_x]
                 interpolacion = float(interpolacion)
 
-                muestra_valores = ctk.CTkLabel(marco_muestra_valores,font= ("Currier",15,"bold"), justify= 'left', anchor='w')
+                muestra_valores = ctk.CTkLabel(marco_muestra_valores,font= ("Currier",15,"bold"), justify= 'left', anchor='w', wraplength=1000)
                 
-                Px, valor_aprox = interpolacion_Lineal(valores_x,valores_y,interpolacion,funcion)
-                print(Px, valor_aprox)
+                Px, valor_aprox, new_y, err_string = Newton_diferencias_dividas(valores_x, valores_y, funcion, interpolacion)
+ #def Newton_recursivo(x_array, y_array=None, ecuacion = None, x_inter=Non:
+                result = ''
+                for i, (val_x, val_y) in enumerate(zip(valores_x, new_y), start=1):
+                    result += f"x{i} = {val_x}, y{i} = {val_y}\n"
+
                 if valores_y == None:
-                    muestra_valores.configure(text=f'x1 = {valores_x[0]}\n\nx2 = {valores_x[1]}\n\nevaluados en f(x) = {funcion}\n\n Con un polinomio interpolador de Px = {Px} con un valor aproximado de {valor_aprox} con un punto de interpolacion de {interpolacion}')
+                    muestra_valores.configure(text=result+f'evaluados en f(x) = {funcion}\n\n Con un polinomio interpolador de Px = {Px} con un valor aproximado de {valor_aprox}{err_string}')
                 else:
-                    muestra_valores.configure(text=f'x1 = {valores_x[0]}\n\nx2 = {valores_x[1]}\n\ny1 = {valores_y[0]}\n\ny2 = {valores_y[1]}\n\nCon un polinomio interpolador de Px = {Px} con un valor aproximado de {valor_aprox}')
-
-
+                    muestra_valores.configure(text=result+f'\nCon un polinomio interpolador de Px = {Px} con un valor aproximado de {valor_aprox}{err_string}')
 
                 if mostrar == True:
+                    print(mostrar)
                     muestra_valores.place(x=10,y=20)
 
                 #Se desactiva el botón de Resolver
@@ -224,7 +335,7 @@ def Ventana_Interpolacion_Cuadratica(frame, ventana2, ventana):
                     messagebox.showerror("¡ ERROR CRITICO !",message="Asegurate de ingresar valores numericos en los campos correspondientes")
             
     
-    y_pos = 225
+    y_pos = 400
    
     boton_resolver = ctk.CTkButton(marco_ingreso_valores,text ="Resolver",command=Validacion,fg_color = color_fondo_boton_ventana2,text_color = color_texto_ventana2,font = tipo_tamaño_letra_ventana2,height = 40,width=120,hover_color=color_boton_pasar_mouse_ventana2,border_color=color_borde_ventana2,border_width=ancho_borde_ventana2)
     boton_resolver.place(x=1150,y=y_pos)
@@ -261,5 +372,4 @@ def Limpiar():
     for widget in marco_muestra_valores.winfo_children():
         widget.destroy()
 
-    
 

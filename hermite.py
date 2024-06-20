@@ -1,5 +1,19 @@
+#!/usr/bin/env python3
 
-import sympy as sp 
+class Color:
+    PURPLE = '\033[95m'
+    CYAN = '\033[96m'
+    DARKCYAN = '\033[36m'
+    BLUE = '\033[94m'
+    GREEN = '\033[92m'
+    YELLOW = '\033[93m'
+    RED = '\033[91m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+    END = '\033[0m'
+
+import sympy as sp
+import math
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -14,33 +28,73 @@ import ctypes
 from functools import partial
 from herramientas import *
 
-#### Resolver
-def InterpolacionLagrange(xk,inter_point, y=None,ecuacion = None):
-    global mostrar
-    print('Ecuacion', ecuacion)
-    x = sp.symbols('x')
-    if ecuacion != None:
-        y = [ecuacion.subs(x, xi).evalf() for xi in xk]
-    n = len(xk)
-    polinomio = 0
-    if not has_unique_values(xk):
-        messagebox.showerror("¡ ERROR CRITICO !", message="Asegurate de ingresar valores no repetidos")
-        mostrar = False
-        return
+mostrar= False 
+cantidad_derivadas = 1
 
-    try:
-        for i in range(n):
-            termino = y[i]
-            for j in range(n):
-                if j != i:
-                    termino *= (x - xk[j]) / (xk[i] - xk[j])
-            polinomio += termino
-            
-        interpolation = polinomio.subs(x, inter_point).evalf()
-        mostrar = True
-        return sp.simplify(polinomio), interpolation, y
-    except ZeroDivisionError:
-        messagebox.showerror("¡ ERROR CRITICO !", message="Asegurate de ingresar valores no repetidos")
+
+def derivate(ecuacion,valor,n,x_array, derivates):
+    if ecuacion == None:
+        funcion = dict(zip(x_array,derivates))
+        return (funcion[valor][n-1])/math.factorial(n)
+
+    x = sp.symbols("x")
+    derivada = ecuacion
+    for _ in range(0, n):
+        derivada = sp.diff(derivada)
+    return derivada.subs(x, valor).evalf()
+
+def hermite(x_array, y_array=None, ecuacion=None,inter_point=None, derivates=None, derivates_array = []):
+    global mostrar
+    if y_array == None and ecuacion == None:
+        raise ValueError(f'{Color.RED}ERROR | Debe de ingresar un array de "Y" o una ecuacion')
+    if ecuacion != None and y_array != None:
+        raise ValueError(f'{Color.RED}ERROR | Ingresas el array o ingresas la ecuacion, no se puede ambos')
+
+    x= sp.symbols("x")
+    fx_array = y_array
+    dx_array = derivates_array
+    if y_array == None:
+        fx_array = [ecuacion.subs(x,xi).evalf() for xi in x_array]
+        if derivates != None:
+            for xi in x_array:
+                dx_array.append([derivate(ecuacion, xi, orden, x_array, None) for orden in range(1, derivates+1)])
+    contador = [0 for _ in range(len(dx_array))]
+    print(f"derivadas: {dx_array}")
+    for i in range(len(dx_array)):
+        for j in range(len(dx_array[i])):
+            if dx_array[i][j] != None:
+                contador[i] += 1
+    x_nodos = []
+    fx_nodos = []
+    suma = 1 if (ecuacion == None) else 0
+    for i in range(0,len(x_array)):
+        for j in range(contador[i]):
+            x_nodos.append(x_array[i])
+            fx_nodos.append(fx_array[i])
+
+    grado = 2*len(x_array) + 1
+    nivel = [fx_nodos] + [[] for i in range(len(x_nodos)-1)]
+#Conseguir las constantes b
+    for i in range(1, len(x_nodos)):
+        for j in range(1, (len(x_nodos)+1)-i):
+            b = (nivel[i-1][j] - nivel[i-1][j-1])/(x_nodos[j+(i-1)] - x_nodos[(j+(i-1)) - i]) if (x_nodos[j+(i-1)] - x_nodos[j-1]) != 0 else (derivate(ecuacion, x_nodos[j+(i-1)], i,x_array, dx_array))
+            nivel[i].append(b)
+
+    b_array = [nivel[i][0] for i in range(0,len(nivel))]
+    factor = [1 for i in range(0, grado)]
+
+
+    Px = b_array[0]
+    for i in range(1, len(x_nodos)):
+        for j in range(0,i):
+            factor[i-1] = (factor[i-1] * (x - x_nodos[j]))
+        Px +=  b_array[i] * factor[i-1]
+
+    Px = sp.expand(Px)
+    Px = sp.simplify(Px)
+    mostrar = True 
+    print(Px, Px.subs(x, inter_point), fx_array)
+    return Px, Px.subs(x, inter_point).evalf(), fx_array
 
 color_fondo_boton_ventana2 = "#2c2b4b"
 color_texto_ventana2 = "white"
@@ -53,7 +107,9 @@ toggle = False
 mostrar_y = True
 
 
-def Ventana_Interpolacion_Lagrange(frame, ventana2, ventana):
+
+
+def Ventana_Hermite(frame, ventana2, ventana):
     global toggle
     global marco_muestra_valores
     global canvas
@@ -83,14 +139,35 @@ def Ventana_Interpolacion_Lagrange(frame, ventana2, ventana):
     etiqueta_ingreso_interpolacion = ctk.CTkLabel(marco_ingreso_valores,text = "Ingrese el punto de interpolacion",font=tipo_tamaño_letra_ventana2)
     etiqueta_ingreso_interpolacion.place(x=565,y=20)
 
+    etiqueta_puntos = ctk.CTkLabel(marco_ingreso_valores, text = 'Puntos', font=tipo_tamaño_letra_ventana2)
+    etiqueta_puntos.place(x=530, y=375)
+
+    etiqueta_numero_derivadas = ctk.CTkLabel(marco_ingreso_valores, text=cantidad_derivadas, font=tipo_tamaño_letra_ventana2)
+    etiqueta_numero_derivadas.place(x=665, y= 350)
+    etiqueta_der = ctk.CTkLabel(marco_ingreso_valores, text = 'Derivadas', font=tipo_tamaño_letra_ventana2)
+    etiqueta_der.place(x=640, y=375)
+
+
     necesarios = [marco_ingreso_valores, tipo_tamaño_letra_ventana2, color_texto_ventana2]
     
     ############# ingresos_y de valores
     ingresos_x0 =IngresarEnCadena(*necesarios, 100, 60, 2)
     ingresos_y = IngresarEnCadena(*necesarios, 325, 60, 2)
+    PlaceArray(ingresos_x0, 100, 60)
+    PlaceArray(ingresos_y, 325, 60)
+    ingresos_derivadas = [[IngresarEnCadena(*necesarios, 825, 60, 2), ctk.CTkLabel(marco_ingreso_valores, text = "f'(x)", font=tipo_tamaño_letra_ventana2), True]]
+    PlaceArray(ingresos_derivadas[0][0], 825, 60)
+    ingresos_derivadas[0][1].place(x=850, y=20)
 
     ingreso_interpolacion = ctk.CTkEntry(marco_ingreso_valores,width=100,height=30,corner_radius=10,font = tipo_tamaño_letra_ventana2,text_color=color_texto_ventana2)
     ingreso_interpolacion.place(x=600,y=60)
+    d_x, d_y = 825, 60
+    t_x, t_y = 850, 20
+    for i in range(1, 4):
+        n_derivada = ""
+        for _ in range(i+1):
+            n_derivada += "'" 
+        ingresos_derivadas.append([IngresarEnCadena(*necesarios, d_x+(150*i), d_y, 2), ctk.CTkLabel(marco_ingreso_valores, text = f"f{n_derivada}(x)", font=tipo_tamaño_letra_ventana2), False])
 
     
     def agregar_ingresos_ys():
@@ -99,39 +176,79 @@ def Ventana_Interpolacion_Lagrange(frame, ventana2, ventana):
             return
         x_x0 = ingresos_x0[-1].winfo_x()
         y_x0 = ingresos_x0[-1].winfo_y()
+        x_y0 = ingresos_y[-1].winfo_x()
+        y_y0 = ingresos_y[-1].winfo_y()
         ingresos_x0.append(ctk.CTkEntry(marco_ingreso_valores,width=100,height=30,corner_radius=10,font = necesarios[1],text_color=necesarios[2]))
         ingresos_x0[-1].place(x=x_x0,y=(y_x0 + 40))
-        print(mostrar_y)
+        ingresos_y.append(ctk.CTkEntry(marco_ingreso_valores,width=100,height=30,corner_radius=10,font = necesarios[1],text_color=necesarios[2]))
         if mostrar_y == True:
-            x_y0 = ingresos_y[-1].winfo_x()
-            y_y0 = ingresos_y[-1].winfo_y()
-            ingresos_y.append(ctk.CTkEntry(marco_ingreso_valores,width=100,height=30,corner_radius=10,font = necesarios[1],text_color=necesarios[2]))
             ingresos_y[-1].place(x=x_y0,y=(y_y0 + 40))
-        else:
-            x_y0 = ingresos_y[-1].winfo_x()
-            y_y0 = ingresos_y[-1].winfo_y()
-            ingresos_y.append(ctk.CTkEntry(marco_ingreso_valores,width=100,height=30,corner_radius=10,font = necesarios[1],text_color=necesarios[2]))
-
-
-
+        for i in range(len(ingresos_derivadas)):
+            xi = ingresos_derivadas[i][0][-1].winfo_x()
+            yi = ingresos_derivadas[i][0][-1].winfo_y()
+            ingresos_derivadas[i][0].append(ctk.CTkEntry(marco_ingreso_valores,width=100,height=30,corner_radius=10,font = necesarios[1],text_color=necesarios[2]))
+            print(i,': ',ingresos_derivadas[i][2])
+            if mostrar_y == True and ingresos_derivadas[i][2] == True:
+                ingresos_derivadas[i][0][-1].place(x=xi, y=yi+40)
 
     def eliminar_ingresos_ys():
         if len(ingresos_x0) <= 2:
             return
-        ingresos_x0[-1].delete(0, END) 
         ingresos_x0[-1].place_forget()
         ingresos_x0.pop()
         ingresos_y[-1].delete(0, END) 
         ingresos_y[-1].place_forget()
         ingresos_y.pop()
+        for i in range(len(ingresos_derivadas)):
+            ingresos_derivadas[i][0][-1].place_forget()
+            ingresos_derivadas[i][0][-1].delete(0, END)
+            ingresos_derivadas[i][0].pop()
 
-                
+    def agregar_derivadas():
+        global cantidad_derivadas
+        global mostrar_y
+        etiqueta_numero_derivadas.configure(text=cantidad_derivadas+1)
 
-    boton_agregar = ctk.CTkButton(marco_ingreso_valores,text ="-",command=eliminar_ingresos_ys,fg_color = color_fondo_boton_ventana2,text_color = color_texto_ventana2,font = tipo_tamaño_letra_ventana2,height = 40,width=50,hover_color=color_boton_pasar_mouse_ventana2,border_color=color_borde_ventana2,border_width=ancho_borde_ventana2)
-    boton_agregar.place(x=500,y=400)
-    boton_eliminar = ctk.CTkButton(marco_ingreso_valores,text ="+",command=agregar_ingresos_ys,fg_color = color_fondo_boton_ventana2,text_color = color_texto_ventana2,font = tipo_tamaño_letra_ventana2,height = 40,width=50,hover_color=color_boton_pasar_mouse_ventana2,border_color=color_borde_ventana2,border_width=ancho_borde_ventana2)
-    boton_eliminar.place(x=555,y=400)
+        if cantidad_derivadas > 2:
+            return
+        if mostrar_y == False:
+            ingresos_derivadas[cantidad_derivadas][2] = True
+            cantidad_derivadas += 1 
+            return
 
+        d_x, d_y = 825, 60
+        t_x, t_y = 850, 20
+        for i in range(len(ingresos_derivadas)):
+            PlaceArray(ingresos_derivadas[cantidad_derivadas][0], d_x+(150*cantidad_derivadas), d_y)
+            ingresos_derivadas[cantidad_derivadas][1].place(x= t_x + (150*cantidad_derivadas), y=t_y)
+            ingresos_derivadas[cantidad_derivadas][2] = True
+
+        cantidad_derivadas += 1
+
+    
+    def eliminar_derivadas():
+        global cantidad_derivadas
+        if cantidad_derivadas <= 1:
+            return
+        UnPlaceArray(ingresos_derivadas[cantidad_derivadas-1][0])
+        ingresos_derivadas[cantidad_derivadas-1][1].place_forget()
+        ingresos_derivadas[cantidad_derivadas-1][2] = False
+        cantidad_derivadas = cantidad_derivadas - 1
+        etiqueta_numero_derivadas.configure(text=cantidad_derivadas)
+
+    btn_x = 500
+    btn_y = 400
+    boton_eliminar = ctk.CTkButton(marco_ingreso_valores,text ="-",command=eliminar_ingresos_ys,fg_color = color_fondo_boton_ventana2,text_color = color_texto_ventana2,font = tipo_tamaño_letra_ventana2,height = 40,width=50,hover_color=color_boton_pasar_mouse_ventana2,border_color=color_borde_ventana2,border_width=ancho_borde_ventana2)
+    boton_eliminar.place(x=btn_x,y=btn_y)
+    boton_agregar = ctk.CTkButton(marco_ingreso_valores,text ="+",command=agregar_ingresos_ys,fg_color = color_fondo_boton_ventana2,text_color = color_texto_ventana2,font = tipo_tamaño_letra_ventana2,height = 40,width=50,hover_color=color_boton_pasar_mouse_ventana2,border_color=color_borde_ventana2,border_width=ancho_borde_ventana2)
+    boton_agregar.place(x=btn_x+55,y=btn_y)
+
+    derivada_boton_eliminar = ctk.CTkButton(marco_ingreso_valores,text ="-",command=eliminar_derivadas,fg_color = color_fondo_boton_ventana2,text_color = color_texto_ventana2,font = tipo_tamaño_letra_ventana2,height = 40,width=50,hover_color=color_boton_pasar_mouse_ventana2,border_color=color_borde_ventana2,border_width=ancho_borde_ventana2)
+    derivada_boton_eliminar.place(x=btn_x+120,y=btn_y)
+    derivada_boton_agregar = ctk.CTkButton(marco_ingreso_valores,text ="+",command=agregar_derivadas,fg_color = color_fondo_boton_ventana2,text_color = color_texto_ventana2,font = tipo_tamaño_letra_ventana2,height = 40,width=50,hover_color=color_boton_pasar_mouse_ventana2,border_color=color_borde_ventana2,border_width=ancho_borde_ventana2)
+    derivada_boton_agregar.place(x=btn_x+175,y=btn_y)
+
+    
 
 
     ingreso_funcion = ctk.CTkEntry(marco_ingreso_valores,width=200,height=30,corner_radius=10,font = tipo_tamaño_letra_ventana2,text_color=color_texto_ventana2)
@@ -141,6 +258,7 @@ def Ventana_Interpolacion_Lagrange(frame, ventana2, ventana):
     def Alternar_visibilidad():
         global toggle
         global mostrar_y
+        global cantidad_derivadas
         if toggle == False:
             boton_funcion_valores.configure(text="Valores de y")
             etiqueta_ingreso_valores_y.configure(text='Funcion')
@@ -151,6 +269,11 @@ def Ventana_Interpolacion_Lagrange(frame, ventana2, ventana):
             for ingreso in ingresos_y:
                 ingreso.delete(0, END)
                 ingreso.place_forget()
+            for i in range(len(ingresos_derivadas)):
+                ingresos_derivadas[i][1].place_forget()
+                for j in range(len(ingresos_y)):
+                    ingresos_derivadas[i][0][j].delete(0, END)
+                    ingresos_derivadas[i][0][j].place_forget()
         else:
             boton_funcion_valores.configure(text='Funcion')
             etiqueta_ingreso_valores_y.configure(text='Valores de y')
@@ -161,6 +284,12 @@ def Ventana_Interpolacion_Lagrange(frame, ventana2, ventana):
             
             for i in range(0,len(ingresos_y)):        ################ CAMBIAR ENTRY POR BOTON
                 ingresos_y[i].place(x=325,y=(60 + 30*i + 10*i))
+            for i in range(len(ingresos_derivadas)):
+                if ingresos_derivadas[i][2] == True:
+                    ingresos_derivadas[i][1].place(x= 850 + (150*i), y=t_y)
+                    for j in range(len(ingresos_y)):
+                            ingresos_derivadas[i][0][j].place(x=825+(150*i),y=60+30*j + 10*j)
+
 
     boton_funcion_valores = ctk.CTkButton(marco_ingreso_valores,text ="Funcion",command=Alternar_visibilidad,fg_color = color_fondo_boton_ventana2,text_color = color_texto_ventana2,font = tipo_tamaño_letra_ventana2,height = 40,width=120,hover_color=color_boton_pasar_mouse_ventana2,border_color=color_borde_ventana2,border_width=ancho_borde_ventana2)
     boton_funcion_valores.place(x=350 , y=400)
@@ -196,7 +325,6 @@ def Ventana_Interpolacion_Lagrange(frame, ventana2, ventana):
         # Finalmente, reemplazar 'e' por 'exp(1)' cuando no está seguido por '**'
         funcion_str = re.sub(r'\be\b(?![\*\w])', 'exp(1)', funcion_str) 
 
-        print('expresion', funcion_str)
         try:
             # Intenta convertir la función ingresada en una expresión sympy
             expr = sp.sympify(funcion_str)
@@ -215,36 +343,70 @@ def Ventana_Interpolacion_Lagrange(frame, ventana2, ventana):
         #Se valida el ingreso de datos
         valores_x = [ingreso.get() for ingreso in ingresos_x0]
         valores_y = [ingreso.get() for ingreso in ingresos_y]
+        valores_derivada = [[ingreso.get() for ingreso in ingresos_derivadas[i][0]] for i in range(len(ingresos_derivadas))]
         interpolacion = ingreso_interpolacion.get()
         funcion = ingreso_funcion.get()
+        derivadas = cantidad_derivadas
+        x_llenados = False
+        y_llenados = False
+        derivada_llenado = False
+        for i in range(len(valores_x)):
+            if (valores_x[i] == ''):
+                x_llenados = True
+            if (valores_y[i] == ''):
+                y_llenados = True
+        for i in range(0,cantidad_derivadas):
+            for j in range(len(valores_x)):
+                if valores_derivada[i][j] == '':
+                    derivada_llenado = True
+        
+        
+
+# Limitar el número de sub-arrays a procesar
+        valores_derivada = valores_derivada[:cantidad_derivadas]
+
+# Convertir elementos a float y reemplazar '' con None
+        derivadas_convertidas = [
+        [float(elem) if elem.strip() != '' else None for elem in subarray]
+        for subarray in valores_derivada        ]
+
+# Eliminar sub-arrays vacíos (todos None)
+        derivadas_convertidas = [subarray for subarray in derivadas_convertidas if any(elem is not None for elem in subarray)]
+
+# Utiliza zip para intercalar los elementos y luego convierte el resultado en una lista
+        valores_derivada = [list(x) for x in zip(*derivadas_convertidas)]
+        
+        print(valores_derivada, cantidad_derivadas) 
 
         #Si estan vacios todos
-        if (valores_x[0] == '' or valores_x[1] == '' or interpolacion == '') or ((valores_y[0] == '' or valores_y[1] == '') and funcion == '') :
+        if (x_llenados == True or interpolacion == '') or ((y_llenados == True or derivada_llenado == True) and funcion == '') :
             messagebox.showerror("¡ ERROR CRITICO !",message="Debe llenar todos los campos de forma correcta")
         else:
-            
+             
             if numero_valido(valores_x[0]) and numero_valido(valores_x[1]) and numero_valido(interpolacion):
 
                 if funcion == '':    
                     valores_y = [float(valores) for valores in valores_y]
                     funcion = None
+                    derivadas = None
+                    valores_derivada = None
                 else:
-                    print('La funcion', funcion)
                     booleano, funcion = Validar_y_Reemplazar_funcion(funcion)
-                    print(booleano, funcion)
                     valores_y = None
-                """else:
-                    messagebox.showerror("¡ ERROR CRITICO !",message="Ingrese una  funcion valida")
-                    return"""
+                    if booleano == False:
+                        messagebox.showerror('ERROR', message='Ingrese una funcion valida')
+                        return
+
 
                 valores_x = [float(valor) for valor in valores_x]
+                print(valores_derivada)
                 interpolacion = float(interpolacion)
-
 
                 muestra_valores = ctk.CTkLabel(marco_muestra_valores,font= ("Currier",15,"bold"), justify= 'left', anchor='w', wraplength=1000)
                 
-                Px, valor_aprox, new_y = InterpolacionLagrange(valores_x,interpolacion, valores_y,funcion)
-                result = ''
+                Px, valor_aprox, new_y = hermite(valores_x, valores_y, funcion, interpolacion, cantidad_derivadas, valores_derivada)
+#def hermite(x_array, y_array=None, ecuacion=None,inter_point=None, derivates=None, derivates_array = []):
+                result = 'Resultado de la interpolacion:\n\n'
                 for i, (val_x, val_y) in enumerate(zip(valores_x, new_y), start=1):
                     result += f"x{i} = {val_x}, y{i} = {val_y}\n"
 
@@ -253,9 +415,9 @@ def Ventana_Interpolacion_Lagrange(frame, ventana2, ventana):
                 else:
                     muestra_valores.configure(text=result+f'\nCon un polinomio interpolador de Px = {Px} con un valor aproximado de {valor_aprox}')
 
-
-
+                print(mostrar)
                 if mostrar == True:
+                    print(mostrar)
                     muestra_valores.place(x=10,y=20)
 
                 #Se desactiva el botón de Resolver
@@ -269,6 +431,7 @@ def Ventana_Interpolacion_Lagrange(frame, ventana2, ventana):
                 [ingresos.delete(0, END) for ingresos in ingresos_y]
                 ingreso_interpolacion.delete(0, END)
                 ingreso_funcion.delete(0, END)
+                [[ingresos[0][i].delete(0, END) for ingresos in ingresos_derivadas] for i in range(len(ingresos_x0))]
 
             else:
                     messagebox.showerror("¡ ERROR CRITICO !",message="Asegurate de ingresar valores numericos en los campos correspondientes")
@@ -285,9 +448,11 @@ def Ventana_Interpolacion_Lagrange(frame, ventana2, ventana):
 
     boton_salir = ctk.CTkButton(marco_ingreso_valores,text="Volver",command=lambda: Volver(ventana2, ventana),fg_color=color_fondo_boton_ventana2,text_color=color_texto_ventana2,font=tipo_tamaño_letra_ventana2,height=40,width=120,hover_color=color_boton_pasar_mouse_ventana2,border_color=color_borde_ventana2,border_width=ancho_borde_ventana2)
     boton_salir.place(x=50,y=y_pos)
-
+    
 
 def Volver(ventana2,ventana):
+    cantidad_derivadas = 1
+    print('volver', cantidad_derivadas)
     ventana2.destroy()
     ventana.deiconify()
 
@@ -296,8 +461,18 @@ def IngresarEnCadena(marco, fuente, color, x, y, cantidad):
     ingresos = []
     for i in range(0, cantidad):
         ingresos.append(ctk.CTkEntry(marco,width=100,height=30,corner_radius=10,font = fuente,text_color=color))
-        ingresos[i].place(x=x,y=(y + 30*i + 10*i))
     return ingresos
+
+def PlaceArray(array, x, y):
+    cantidad = len(array)
+    for i in range(cantidad):
+        array[i].place(x=x,y=(y + 30*i + 10*i))
+def UnPlaceArray(array):
+    cantidad = len(array)
+    for i in range(cantidad):
+        array[i].place_forget()
+        array[i].delete(0, END)
+
 
 def Limpiar():
     global marco_muestra_valores
@@ -310,6 +485,5 @@ def Limpiar():
     # Iterar sobre los widgets y destruirlos uno por uno
     for widget in marco_muestra_valores.winfo_children():
         widget.destroy()
-
 
 
