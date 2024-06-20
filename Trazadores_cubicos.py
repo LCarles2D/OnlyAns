@@ -1,7 +1,7 @@
-
-import sympy as sp 
-import pandas as pd
+#!/usr/bin/env python3
 import numpy as np
+import sympy as sp
+import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
@@ -12,36 +12,328 @@ import customtkinter as ctk
 import re
 import ctypes
 from functools import partial
-from herramientas import *
 
-#### Resolver
-def InterpolacionLagrange(xk,inter_point, y=None,ecuacion = None):
-    global mostrar
-    print('Ecuacion', ecuacion)
-    x = sp.symbols('x')
-    if ecuacion != None:
-        y = [ecuacion.subs(x, xi).evalf() for xi in xk]
-    n = len(xk)
-    polinomio = 0
-    if not has_unique_values(xk):
-        messagebox.showerror("¡ ERROR CRITICO !", message="Asegurate de ingresar valores no repetidos")
-        mostrar = False
-        return
+mostrar= False
 
-    try:
-        for i in range(n):
-            termino = y[i]
-            for j in range(n):
-                if j != i:
-                    termino *= (x - xk[j]) / (xk[i] - xk[j])
-            polinomio += termino
+def Trazadores_Cubicos(valores_x,valores_y,grado_cero,grado_uno,grado_dos,grado_tres,punto_evaluar):
+    print("---------------------------Trazadores Cubicos---------------------------------------------------")
+    print(f"x : {valores_x}")
+    print(f"y : {valores_y}")
+    print("---------------------------------------------------------------------------")
+    
+    #Paso 1  : Identifico los intervalos
+    intervalos = [(valores_x[i], valores_x[i + 1]) for i in range(len(valores_x) - 1)]
+    print(f"Intervalos :" ,intervalos)
+
+
+    if grado_cero == True:
+       print("\n---------Grado Cero -----------")
+
+       n = len(valores_x)
+
+       # Evaluar un punto
+       evaluado = False
+       for j in range(n-1):
+           if valores_x[j] <= punto_evaluar <= valores_x[j+1]:
+               punto_evaluado = valores_y[j]
+               evaluado = True
+               break
+
+       if evaluado:
+           print(f"El punto {punto_evaluar} se encuentra en el intervalo [{valores_x[j]}, {valores_x[j+1]}] y su valor evaluado es {punto_evaluado}.")
+       else:
+           print(f"El punto {punto_evaluar} no se encuentra en ningún rango.")
+
+       # GRAFICA
+       # Para spline de grado 0, simplemente dibujamos líneas horizontales entre los puntos
+       xtraza = np.repeat(valores_x, 2)[1:-1]
+       ytraza = np.repeat(valores_y[:-1], 2)
+       plt.plot(xtraza, ytraza, label='trazador', color='blue', linestyle='-', marker='o')
+       plt.title('Grado Cero')
+       plt.xlabel('xi')
+       plt.ylabel('px(xi)')
+       plt.legend()
+       plt.show()
+
+
+    elif grado_uno == True:
+        print("\n---------Grado Uno -----------")
+
+        n = len(valores_x)
+
+        # Valores h
+        h = np.zeros(n-1, dtype=float)
+        for j in range(0, n-1):
+            h[j] = valores_x[j+1] - valores_x[j]
+
+        # Coeficientes del polinomio lineal
+        a = np.zeros(n-1, dtype=float)
+        b = np.zeros(n-1, dtype=float)
+        for j in range(0, n-1):
+            a[j] = (valores_y[j+1] - valores_y[j]) / h[j]
+            b[j] = valores_y[j] - a[j] * valores_x[j]
+
+        # Polinomio trazador
+        x = sp.Symbol('x')
+        px_tabla = []
+        for j in range(0, n-1):
+            pxtramo = a[j] * x + b[j]
+            pxtramo = pxtramo.expand()
+            px_tabla.append(pxtramo)
+
+        # SALIDA
+        print('Funciones: ')
+        for tramo in range(1, n):
+            print(f'{px_tabla[tramo-1]} \t, [{valores_x[tramo-1]}, {valores_x[tramo]}]')
+
+        # Evaluar un punto
+        evaluado = False
+        for j in range(n-1):
+            if valores_x[j] <= punto_evaluar <= valores_x[j+1]:
+                pxtramo = px_tabla[j]
+                pxt = sp.lambdify('x', pxtramo)
+                punto_evaluado = pxt(punto_evaluar)
+                evaluado = True
+                break
+
+        if evaluado:
+            print(f"\nEl punto {punto_evaluar} se encuentra en el intervalo [{valores_x[j]}, {valores_x[j+1]}] y en la función {pxtramo}.")
+            print(f"f({punto_evaluar}) : {punto_evaluado}")
+        else:
+            print(f"El punto {punto_evaluar} no se encuentra en ningún rango.")
+
+        # GRAFICA
+        # Puntos para graficar cada tramo
+        xtraza = np.array([])
+        ytraza = np.array([])
+        tramo = 1
+        while tramo < n:
+            a = valores_x[tramo-1]
+            b = valores_x[tramo]
+            xtramo = np.linspace(a, b, 100)
             
-        interpolation = polinomio.subs(x, inter_point).evalf()
-        mostrar = True
-        return sp.simplify(polinomio), interpolation, y
-    except ZeroDivisionError:
-        messagebox.showerror("¡ ERROR CRITICO !", message="Asegurate de ingresar valores no repetidos")
+            # Evalua polinomio del tramo
+            pxtramo = px_tabla[tramo-1]
+            pxt = sp.lambdify('x', pxtramo)
+            ytramo = pxt(xtramo)
 
+            # Vectores de trazador en x, y
+            xtraza = np.concatenate((xtraza, xtramo))
+            ytraza = np.concatenate((ytraza, ytramo))
+            tramo += 1
+
+        # Gráfica
+        plt.plot(valores_x, valores_y, 'ro', label='puntos')
+        plt.plot(xtraza, ytraza, label='trazador', color='blue')
+        plt.title('Grado Uno')
+        plt.xlabel('xi')
+        plt.ylabel('px(xi)')
+        plt.legend()
+        plt.show()
+
+
+    elif grado_dos == True:
+        print("\n---------Grado Dos -----------")
+        n = len(valores_x)
+        a = np.zeros(n-1, dtype=float)
+        b = np.zeros(n-1, dtype=float)
+        c = np.zeros(n-1, dtype=float)
+
+        for j in range(n-1):
+            h = valores_x[j+1] - valores_x[j]
+            a[j] = (valores_y[j+1] - valores_y[j]) / (2 * h)
+            b[j] = (valores_y[j+1] - valores_y[j]) / h - h * a[j]
+            c[j] = valores_y[j]
+
+        # Polinomio trazador
+        x = sp.Symbol('x')
+        px_tabla = []
+
+        for j in range(n-1):
+            pxtramo = a[j] * (x - valores_x[j])**2 + b[j] * (x - valores_x[j]) + c[j]
+            pxtramo = pxtramo.expand()
+            px_tabla.append(pxtramo)
+
+        # PROCEDIMIENTO
+        # Tabla de polinomios por tramos
+        muestras = 10  # Para la grafica
+
+        # SALIDA
+        print('Funciones: ')
+        for tramo in range(1, n, 1):
+            print(str(px_tabla[tramo-1]) + ' \t, [' + str(valores_x[tramo-1])
+                + ',' + str(valores_x[tramo]) + ']')
+
+        # Evaluar un punto
+        evaluado = False
+        for j in range(n-1):
+            if valores_x[j] <= punto_evaluar <= valores_x[j+1]:
+                pxtramo = px_tabla[j]
+                pxt = sp.lambdify('x', pxtramo)
+                punto_evaluado = pxt(punto_evaluar)
+                evaluado = True
+                break
+            else:
+                evaluado = False
+
+        if evaluado:
+            print(f"\nEl punto {punto_evaluar} se encuentra en el intervalo [{valores_x[j]}, {valores_x[j+1]}] y en la función {pxtramo}.")
+            print(f"f({punto_evaluar}) : {punto_evaluado}")
+        else:
+            print(f"El punto {punto_evaluar} no se encuentra en ningún rango.")
+
+        # GRAFICA
+        # Puntos para graficar cada tramo
+        xtraza = np.array([])
+        ytraza = np.array([])
+        tramo = 1
+
+        while tramo < n:
+            a_tramo = valores_x[tramo-1]
+            b_tramo = valores_x[tramo]
+            xtramo = np.linspace(a_tramo, b_tramo, muestras)
+
+            # evaluar polinomio del tramo
+            pxtramo = px_tabla[tramo-1]
+            pxt = sp.lambdify('x', pxtramo)
+            ytramo = pxt(xtramo)
+
+            # vectores de trazador en x, y
+            xtraza = np.concatenate((xtraza, xtramo))
+            ytraza = np.concatenate((ytraza, ytramo))
+            tramo += 1
+
+        # Gráfica
+        plt.plot(valores_x, valores_y, 'ro', label='puntos')
+        plt.plot(xtraza, ytraza, label='trazador', color='blue')
+        plt.title('Grado Dos')
+        plt.xlabel('xi')
+        plt.ylabel('px(xi)')
+        plt.legend()
+        plt.show()
+                
+
+                
+
+
+    elif grado_tres == True:
+        print("\n---------Grado Tres -----------")
+        
+        # Trazador cúbico natural
+        # Condición: S''(x_0) = S''(x_n) = 0
+
+        n = len(valores_x)
+        
+        # Valores h
+        h = np.zeros(n-1, dtype = float)
+        for j in range(0,n-1,1):
+            h[j] = valores_x[j+1] - valores_x[j]
+        
+        # Sistema de ecuaciones
+        A = np.zeros(shape=(n-2,n-2), dtype = float)
+        B = np.zeros(n-2, dtype = float)
+        S = np.zeros(n, dtype = float)
+
+        A[0,0] = 2*(h[0]+h[1])
+        A[0,1] = h[1]
+        B[0] = 6*((valores_y[2]-valores_y[1])/h[1] - (valores_y[1]-valores_y[0])/h[0])
+
+        for i in range(1,n-3,1):
+            A[i,i-1] = h[i]
+            A[i,i] = 2*(h[i]+h[i+1])
+            A[i,i+1] = h[i+1]
+            factor21 = (valores_y[i+2]-valores_y[i+1])/h[i+1]
+            factor10 = (valores_y[i+1]-valores_y[i])/h[i]
+            B[i] = 6*(factor21 - factor10)
+            
+        A[n-3,n-4] = h[n-3]
+        A[n-3,n-3] = 2*(h[n-3]+h[n-2])
+        factor12 = (valores_y[n-1]-valores_y[n-2])/h[n-2]
+        factor23 = (valores_y[n-2]-valores_y[n-3])/h[n-3]
+        B[n-3] = 6*(factor12 - factor23)
+        
+        # Resolver sistema de ecuaciones S
+        r = np.linalg.solve(A,B)
+        for j in range(1,n-1,1):
+            S[j] = r[j-1]
+        S[0] = 0
+        S[n-1] = 0
+        
+        # Coeficientes
+        a = np.zeros(n-1, dtype = float)
+        b = np.zeros(n-1, dtype = float)
+        c = np.zeros(n-1, dtype = float)
+        d = np.zeros(n-1, dtype = float)
+        for j in range(0,n-1,1):
+            a[j] = (S[j+1]-S[j])/(6*h[j])
+            b[j] = S[j]/2
+            factor10 = (valores_y[j+1]-valores_y[j])/h[j]
+            c[j] = factor10 - (2*h[j]*S[j]+h[j]*S[j+1])/6
+            d[j] = valores_y[j]
+        
+        # Polinomio trazador
+        x = sp.Symbol('x')
+        px_tabla = []
+        for j in range(0,n-1,1):
+
+            pxtramo = a[j]*(x-valores_x[j])**3 + b[j]*(x-valores_x[j])**2
+            pxtramo = pxtramo + c[j]*(x-valores_x[j])+ d[j]
+            
+            pxtramo = pxtramo.expand()
+            px_tabla.append(pxtramo)
+        
+
+
+        # PROCEDIMIENTO
+        # Tabla de polinomios por tramos
+        n = len(valores_x)
+        muestras = 10 # Para la grafica
+
+        # SALIDA
+        print('Funciones: ')
+        for tramo in range(1,n,1):
+            print(str(px_tabla[tramo-1]) + ' \t, ['+str(valores_x[tramo-1])
+                +','+str(valores_x[tramo])+']')
+            
+        #Evaluar un punto
+        evaluado = False
+        for j in range(n-1):
+            if valores_x[j] <= punto_evaluar <= valores_x[j+1]:
+                pxtramo = px_tabla[j]
+                pxt = sp.lambdify('x', pxtramo)
+                punto_evaluado = pxt(punto_evaluar)
+                evaluado = True
+                break
+            else:
+                evaluado = False
+
+        if  evaluado == True:
+            print (f"\nEl punto {punto_evaluar} se encuentra en el intervalo [{valores_x[j]}, {valores_x[j+1]}] y en la funcion {pxtramo}.")
+            print(f"f({punto_evaluar}) : {punto_evaluado}")
+        else:
+            print( f"El punto {punto_evaluar} no se encuentra en ningún rango.")
+
+        # GRAFICA
+        # Puntos para graficar cada tramo
+        xtraza = np.array([])
+        ytraza = np.array([])
+        tramo = 1
+        while not(tramo>=n):
+            a = valores_x[tramo-1]
+            b = valores_x[tramo]
+            xtramo = np.linspace(a,b,muestras)
+            
+            # evalua polinomio del tramo
+            pxtramo = px_tabla[tramo-1]
+            pxt = sp.lambdify('x',pxtramo)
+            ytramo = pxt(xtramo)
+
+            # vectores de trazador en x,y
+            xtraza = np.concatenate((xtraza,xtramo))
+            ytraza = np.concatenate((ytraza,ytramo))
+            tramo = tramo + 1
+
+ 
 color_fondo_boton_ventana2 = "#2c2b4b"
 color_texto_ventana2 = "white"
 tipo_tamaño_letra_ventana2 = ("Currier",12,"bold")
@@ -53,7 +345,7 @@ toggle = False
 mostrar_y = True
 
 
-def Ventana_Interpolacion_Lagrange(frame, ventana2, ventana):
+def Ventana_Trazadores_Cubicos(frame, ventana2, ventana):
     global toggle
     global marco_muestra_valores
     global canvas
@@ -101,7 +393,6 @@ def Ventana_Interpolacion_Lagrange(frame, ventana2, ventana):
         y_x0 = ingresos_x0[-1].winfo_y()
         ingresos_x0.append(ctk.CTkEntry(marco_ingreso_valores,width=100,height=30,corner_radius=10,font = necesarios[1],text_color=necesarios[2]))
         ingresos_x0[-1].place(x=x_x0,y=(y_x0 + 40))
-        print(mostrar_y)
         if mostrar_y == True:
             x_y0 = ingresos_y[-1].winfo_x()
             y_y0 = ingresos_y[-1].winfo_y()
@@ -196,7 +487,6 @@ def Ventana_Interpolacion_Lagrange(frame, ventana2, ventana):
         # Finalmente, reemplazar 'e' por 'exp(1)' cuando no está seguido por '**'
         funcion_str = re.sub(r'\be\b(?![\*\w])', 'exp(1)', funcion_str) 
 
-        print('expresion', funcion_str)
         try:
             # Intenta convertir la función ingresada en una expresión sympy
             expr = sp.sympify(funcion_str)
@@ -217,9 +507,17 @@ def Ventana_Interpolacion_Lagrange(frame, ventana2, ventana):
         valores_y = [ingreso.get() for ingreso in ingresos_y]
         interpolacion = ingreso_interpolacion.get()
         funcion = ingreso_funcion.get()
-
+        x_llenados = False
+        y_llenados = False
+        derivada_llenado = False
+        for i in range(len(valores_x)):
+            if (valores_x[i] == ''):
+                x_llenados = True
+            if (valores_y[i] == ''):
+                y_llenados = True
+       #Si estan vacios todos
         #Si estan vacios todos
-        if (valores_x[0] == '' or valores_x[1] == '' or interpolacion == '') or ((valores_y[0] == '' or valores_y[1] == '') and funcion == '') :
+        if (x_llenados == True or interpolacion == '') or (y_llenados == True and funcion == '') :
             messagebox.showerror("¡ ERROR CRITICO !",message="Debe llenar todos los campos de forma correcta")
         else:
             
@@ -229,33 +527,33 @@ def Ventana_Interpolacion_Lagrange(frame, ventana2, ventana):
                     valores_y = [float(valores) for valores in valores_y]
                     funcion = None
                 else:
-                    print('La funcion', funcion)
                     booleano, funcion = Validar_y_Reemplazar_funcion(funcion)
-                    print(booleano, funcion)
                     valores_y = None
                 """else:
                     messagebox.showerror("¡ ERROR CRITICO !",message="Ingrese una  funcion valida")
                     return"""
 
+                if booleano == False:
+                    messagebox.showerror('ERROR', message='Ingrese una funcion valida')
+                    return
                 valores_x = [float(valor) for valor in valores_x]
                 interpolacion = float(interpolacion)
 
-
                 muestra_valores = ctk.CTkLabel(marco_muestra_valores,font= ("Currier",15,"bold"), justify= 'left', anchor='w', wraplength=1000)
                 
-                Px, valor_aprox, new_y = InterpolacionLagrange(valores_x,interpolacion, valores_y,funcion)
+                Px, valor_aprox, new_y, err_string = Newton_diferencias_dividas(valores_x, valores_y, funcion, interpolacion)
+ #def Newton_recursivo(x_array, y_array=None, ecuacion = None, x_inter=Non:
                 result = ''
                 for i, (val_x, val_y) in enumerate(zip(valores_x, new_y), start=1):
                     result += f"x{i} = {val_x}, y{i} = {val_y}\n"
 
                 if valores_y == None:
-                    muestra_valores.configure(text=result+f'evaluados en f(x) = {funcion}\n\n Con un polinomio interpolador de Px = {Px} con un valor aproximado de {valor_aprox}')
+                    muestra_valores.configure(text=result+f'evaluados en f(x) = {funcion}\n\n Con un polinomio interpolador de Px = {Px} con un valor aproximado de {valor_aprox}{err_string}')
                 else:
-                    muestra_valores.configure(text=result+f'\nCon un polinomio interpolador de Px = {Px} con un valor aproximado de {valor_aprox}')
-
-
+                    muestra_valores.configure(text=result+f'\nCon un polinomio interpolador de Px = {Px} con un valor aproximado de {valor_aprox}{err_string}')
 
                 if mostrar == True:
+                    print(mostrar)
                     muestra_valores.place(x=10,y=20)
 
                 #Se desactiva el botón de Resolver
@@ -310,6 +608,5 @@ def Limpiar():
     # Iterar sobre los widgets y destruirlos uno por uno
     for widget in marco_muestra_valores.winfo_children():
         widget.destroy()
-
 
 

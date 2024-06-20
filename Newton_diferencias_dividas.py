@@ -274,9 +274,16 @@ def Ventana_Newton_diferencias(frame, ventana2, ventana):
         valores_y = [ingreso.get() for ingreso in ingresos_y]
         interpolacion = ingreso_interpolacion.get()
         funcion = ingreso_funcion.get()
-
-        #Si estan vacios todos
-        if (valores_x[0] == '' or valores_x[1] == '' or interpolacion == '') or ((valores_y[0] == '' or valores_y[1] == '') and funcion == '') :
+        x_llenados = False
+        y_llenados = False
+        derivada_llenado = False
+        for i in range(len(valores_x)):
+            if (valores_x[i] == ''):
+                x_llenados = True
+            if (valores_y[i] == ''):
+                y_llenados = True
+       #Si estan vacios todos
+        if (x_llenados == True or interpolacion == '') or (y_llenados == True and funcion == '') :
             messagebox.showerror("¡ ERROR CRITICO !",message="Debe llenar todos los campos de forma correcta")
         else:
             
@@ -288,13 +295,10 @@ def Ventana_Newton_diferencias(frame, ventana2, ventana):
                 else:
                     booleano, funcion = Validar_y_Reemplazar_funcion(funcion)
                     valores_y = None
-                """else:
-                    messagebox.showerror("¡ ERROR CRITICO !",message="Ingrese una  funcion valida")
-                    return"""
+                    if booleano == False:
+                        messagebox.showerror('ERROR', message='Ingrese una funcion valida')
+                        return
 
-                if booleano == False:
-                    messagebox.showerror('ERROR', message='Ingrese una funcion valida')
-                    return
                 valores_x = [float(valor) for valor in valores_x]
                 interpolacion = float(interpolacion)
 
