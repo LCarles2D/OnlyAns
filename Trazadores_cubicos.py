@@ -15,19 +15,21 @@ from functools import partial
 
 mostrar= False
 
-def Trazadores_Cubicos(valores_x,valores_y,grado_cero,grado_uno,grado_dos,grado_tres,punto_evaluar):
-    print("---------------------------Trazadores Cubicos---------------------------------------------------")
-    print(f"x : {valores_x}")
-    print(f"y : {valores_y}")
-    print("---------------------------------------------------------------------------")
+def Trazadores_Cubicos(valores_x,valores_y, punto_evaluar,grado):
+    global mostrar
+    output_text = ""
+    output_text += "---------------------------Trazadores Cubicos---------------------------------------------------\n"
+    output_text += f"x : {valores_x}\n"
+    output_text += f"y : {valores_y}\n"
+    output_text += "---------------------------------------------------------------------------\n"
     
     #Paso 1  : Identifico los intervalos
     intervalos = [(valores_x[i], valores_x[i + 1]) for i in range(len(valores_x) - 1)]
-    print(f"Intervalos :" ,intervalos)
+    output_text += f"Intervalos : {intervalos}\n"
 
 
-    if grado_cero == True:
-       print("\n---------Grado Cero -----------")
+    if grado == 0:
+       output_text += "\n---------Grado Cero -----------\n"
 
        n = len(valores_x)
 
@@ -40,24 +42,16 @@ def Trazadores_Cubicos(valores_x,valores_y,grado_cero,grado_uno,grado_dos,grado_
                break
 
        if evaluado:
-           print(f"El punto {punto_evaluar} se encuentra en el intervalo [{valores_x[j]}, {valores_x[j+1]}] y su valor evaluado es {punto_evaluado}.")
+           output_text += f"El punto {punto_evaluar} se encuentra en el intervalo [{valores_x[j]}, {valores_x[j+1]}] y su valor evaluado es {punto_evaluado}.\n"
        else:
-           print(f"El punto {punto_evaluar} no se encuentra en ningún rango.")
+           output_text += f"El punto {punto_evaluar} no se encuentra en ningún rango.\n"
 
        # GRAFICA
        # Para spline de grado 0, simplemente dibujamos líneas horizontales entre los puntos
-       xtraza = np.repeat(valores_x, 2)[1:-1]
-       ytraza = np.repeat(valores_y[:-1], 2)
-       plt.plot(xtraza, ytraza, label='trazador', color='blue', linestyle='-', marker='o')
-       plt.title('Grado Cero')
-       plt.xlabel('xi')
-       plt.ylabel('px(xi)')
-       plt.legend()
-       plt.show()
 
 
-    elif grado_uno == True:
-        print("\n---------Grado Uno -----------")
+    elif grado == 1:
+        output_text += "\n---------Grado Uno -----------\n"
 
         n = len(valores_x)
 
@@ -82,9 +76,9 @@ def Trazadores_Cubicos(valores_x,valores_y,grado_cero,grado_uno,grado_dos,grado_
             px_tabla.append(pxtramo)
 
         # SALIDA
-        print('Funciones: ')
+        output_text += 'Funciones: \n'
         for tramo in range(1, n):
-            print(f'{px_tabla[tramo-1]} \t, [{valores_x[tramo-1]}, {valores_x[tramo]}]')
+            output_text += f'{px_tabla[tramo-1]} \t, [{valores_x[tramo-1]}, {valores_x[tramo]}]\n'
 
         # Evaluar un punto
         evaluado = False
@@ -97,10 +91,10 @@ def Trazadores_Cubicos(valores_x,valores_y,grado_cero,grado_uno,grado_dos,grado_
                 break
 
         if evaluado:
-            print(f"\nEl punto {punto_evaluar} se encuentra en el intervalo [{valores_x[j]}, {valores_x[j+1]}] y en la función {pxtramo}.")
-            print(f"f({punto_evaluar}) : {punto_evaluado}")
+            output_text += f"\nEl punto {punto_evaluar} se encuentra en el intervalo [{valores_x[j]}, {valores_x[j+1]}] y en la función {pxtramo}.\n"
+            output_text += f"f({punto_evaluar}) : {punto_evaluado}\n"
         else:
-            print(f"El punto {punto_evaluar} no se encuentra en ningún rango.")
+            output_text += f"El punto {punto_evaluar} no se encuentra en ningún rango.\n"
 
         # GRAFICA
         # Puntos para graficar cada tramo
@@ -122,18 +116,9 @@ def Trazadores_Cubicos(valores_x,valores_y,grado_cero,grado_uno,grado_dos,grado_
             ytraza = np.concatenate((ytraza, ytramo))
             tramo += 1
 
-        # Gráfica
-        plt.plot(valores_x, valores_y, 'ro', label='puntos')
-        plt.plot(xtraza, ytraza, label='trazador', color='blue')
-        plt.title('Grado Uno')
-        plt.xlabel('xi')
-        plt.ylabel('px(xi)')
-        plt.legend()
-        plt.show()
 
-
-    elif grado_dos == True:
-        print("\n---------Grado Dos -----------")
+    elif grado == 2:
+        output_text += "\n---------Grado Dos -----------\n"
         n = len(valores_x)
         a = np.zeros(n-1, dtype=float)
         b = np.zeros(n-1, dtype=float)
@@ -159,10 +144,9 @@ def Trazadores_Cubicos(valores_x,valores_y,grado_cero,grado_uno,grado_dos,grado_
         muestras = 10  # Para la grafica
 
         # SALIDA
-        print('Funciones: ')
+        output_text += 'Funciones: \n'
         for tramo in range(1, n, 1):
-            print(str(px_tabla[tramo-1]) + ' \t, [' + str(valores_x[tramo-1])
-                + ',' + str(valores_x[tramo]) + ']')
+            output_text += str(px_tabla[tramo-1]) + ' \t, [' + str(valores_x[tramo-1]) + ',' + str(valores_x[tramo]) + ']\n'
 
         # Evaluar un punto
         evaluado = False
@@ -177,10 +161,10 @@ def Trazadores_Cubicos(valores_x,valores_y,grado_cero,grado_uno,grado_dos,grado_
                 evaluado = False
 
         if evaluado:
-            print(f"\nEl punto {punto_evaluar} se encuentra en el intervalo [{valores_x[j]}, {valores_x[j+1]}] y en la función {pxtramo}.")
-            print(f"f({punto_evaluar}) : {punto_evaluado}")
+            output_text += f"\nEl punto {punto_evaluar} se encuentra en el intervalo [{valores_x[j]}, {valores_x[j+1]}] y en la función {pxtramo}.\n"
+            output_text += f"f({punto_evaluar}) : {punto_evaluado}\n"
         else:
-            print(f"El punto {punto_evaluar} no se encuentra en ningún rango.")
+            output_text += f"El punto {punto_evaluar} no se encuentra en ningún rango.\n"
 
         # GRAFICA
         # Puntos para graficar cada tramo
@@ -204,20 +188,13 @@ def Trazadores_Cubicos(valores_x,valores_y,grado_cero,grado_uno,grado_dos,grado_
             tramo += 1
 
         # Gráfica
-        plt.plot(valores_x, valores_y, 'ro', label='puntos')
-        plt.plot(xtraza, ytraza, label='trazador', color='blue')
-        plt.title('Grado Dos')
-        plt.xlabel('xi')
-        plt.ylabel('px(xi)')
-        plt.legend()
-        plt.show()
                 
 
                 
 
 
-    elif grado_tres == True:
-        print("\n---------Grado Tres -----------")
+    elif grado == 3:
+        output_text += "\n---------Grado Tres -----------\n"
         
         # Trazador cúbico natural
         # Condición: S''(x_0) = S''(x_n) = 0
@@ -290,10 +267,9 @@ def Trazadores_Cubicos(valores_x,valores_y,grado_cero,grado_uno,grado_dos,grado_
         muestras = 10 # Para la grafica
 
         # SALIDA
-        print('Funciones: ')
+        output_text += 'Funciones: \n'
         for tramo in range(1,n,1):
-            print(str(px_tabla[tramo-1]) + ' \t, ['+str(valores_x[tramo-1])
-                +','+str(valores_x[tramo])+']')
+            output_text += str(px_tabla[tramo-1]) + ' \t, ['+str(valores_x[tramo-1]) +','+str(valores_x[tramo])+']\n'
             
         #Evaluar un punto
         evaluado = False
@@ -308,10 +284,10 @@ def Trazadores_Cubicos(valores_x,valores_y,grado_cero,grado_uno,grado_dos,grado_
                 evaluado = False
 
         if  evaluado == True:
-            print (f"\nEl punto {punto_evaluar} se encuentra en el intervalo [{valores_x[j]}, {valores_x[j+1]}] y en la funcion {pxtramo}.")
-            print(f"f({punto_evaluar}) : {punto_evaluado}")
+            output_text += f"\nEl punto {punto_evaluar} se encuentra en el intervalo [{valores_x[j]}, {valores_x[j+1]}] y en la funcion {pxtramo}.\n"
+            output_text += f"f({punto_evaluar}) : {punto_evaluado}\n"
         else:
-            print( f"El punto {punto_evaluar} no se encuentra en ningún rango.")
+            output_text += f"El punto {punto_evaluar} no se encuentra en ningún rango.\n"
 
         # GRAFICA
         # Puntos para graficar cada tramo
@@ -332,6 +308,10 @@ def Trazadores_Cubicos(valores_x,valores_y,grado_cero,grado_uno,grado_dos,grado_
             xtraza = np.concatenate((xtraza,xtramo))
             ytraza = np.concatenate((ytraza,ytramo))
             tramo = tramo + 1
+    mostrar = True
+    print(output_text)
+    return output_text
+
 
  
 color_fondo_boton_ventana2 = "#2c2b4b"
@@ -343,12 +323,14 @@ color_borde_ventana2  = "white"
 ancho_borde_ventana2 = 2
 toggle = False
 mostrar_y = True
+grados = 0
 
 
 def Ventana_Trazadores_Cubicos(frame, ventana2, ventana):
     global toggle
     global marco_muestra_valores
     global canvas
+    global grados
 
     global boton_limpiar,boton_resolver
     global tipo_tamaño_letra_ventana2,color_fondo_boton_ventana2,color_fondo_boton_ventana2
@@ -375,6 +357,12 @@ def Ventana_Trazadores_Cubicos(frame, ventana2, ventana):
     etiqueta_ingreso_interpolacion = ctk.CTkLabel(marco_ingreso_valores,text = "Ingrese el punto de interpolacion",font=tipo_tamaño_letra_ventana2)
     etiqueta_ingreso_interpolacion.place(x=565,y=20)
 
+    etiqueta_grados_text = ctk.CTkLabel(marco_ingreso_valores, text = "Grados:", font=tipo_tamaño_letra_ventana2)
+    etiqueta_grados_text.place(x= 875, y= 105)
+
+    etiqueta_grados = ctk.CTkLabel(marco_ingreso_valores, text = grados, font = tipo_tamaño_letra_ventana2)
+    etiqueta_grados.place(x= 900, y= 125)
+
     necesarios = [marco_ingreso_valores, tipo_tamaño_letra_ventana2, color_texto_ventana2]
     
     ############# ingresos_y de valores
@@ -384,6 +372,17 @@ def Ventana_Trazadores_Cubicos(frame, ventana2, ventana):
     ingreso_interpolacion = ctk.CTkEntry(marco_ingreso_valores,width=100,height=30,corner_radius=10,font = tipo_tamaño_letra_ventana2,text_color=color_texto_ventana2)
     ingreso_interpolacion.place(x=600,y=60)
 
+    def agregar_grados():
+        global grados
+        if grados < 3:
+            grados += 1
+            etiqueta_grados.configure(text=grados)
+
+    def eliminar_grados():
+        global grados
+        if grados > 0:
+            grados -= 1 
+            etiqueta_grados.configure(text=grados)
     
     def agregar_ingresos_ys():
         global mostrar_y
@@ -393,7 +392,7 @@ def Ventana_Trazadores_Cubicos(frame, ventana2, ventana):
         y_x0 = ingresos_x0[-1].winfo_y()
         ingresos_x0.append(ctk.CTkEntry(marco_ingreso_valores,width=100,height=30,corner_radius=10,font = necesarios[1],text_color=necesarios[2]))
         ingresos_x0[-1].place(x=x_x0,y=(y_x0 + 40))
-        if mostrar_y == True:
+        if mostrar_y == True:   
             x_y0 = ingresos_y[-1].winfo_x()
             y_y0 = ingresos_y[-1].winfo_y()
             ingresos_y.append(ctk.CTkEntry(marco_ingreso_valores,width=100,height=30,corner_radius=10,font = necesarios[1],text_color=necesarios[2]))
@@ -422,7 +421,11 @@ def Ventana_Trazadores_Cubicos(frame, ventana2, ventana):
     boton_agregar.place(x=500,y=400)
     boton_eliminar = ctk.CTkButton(marco_ingreso_valores,text ="+",command=agregar_ingresos_ys,fg_color = color_fondo_boton_ventana2,text_color = color_texto_ventana2,font = tipo_tamaño_letra_ventana2,height = 40,width=50,hover_color=color_boton_pasar_mouse_ventana2,border_color=color_borde_ventana2,border_width=ancho_borde_ventana2)
     boton_eliminar.place(x=555,y=400)
-
+    
+    boton_agregar_grados = ctk.CTkButton(marco_ingreso_valores,text ="-",command=eliminar_grados,fg_color = color_fondo_boton_ventana2,text_color = color_texto_ventana2,font = tipo_tamaño_letra_ventana2,height = 40,width=50,hover_color=color_boton_pasar_mouse_ventana2,border_color=color_borde_ventana2,border_width=ancho_borde_ventana2)
+    boton_agregar_grados.place(x=850,y=60)
+    boton_eliminar_grados = ctk.CTkButton(marco_ingreso_valores,text ="+",command=agregar_grados,fg_color = color_fondo_boton_ventana2,text_color = color_texto_ventana2,font = tipo_tamaño_letra_ventana2,height = 40,width=50,hover_color=color_boton_pasar_mouse_ventana2,border_color=color_borde_ventana2,border_width=ancho_borde_ventana2)
+    boton_eliminar_grados.place(x=905,y=60)
 
 
     ingreso_funcion = ctk.CTkEntry(marco_ingreso_valores,width=200,height=30,corner_radius=10,font = tipo_tamaño_letra_ventana2,text_color=color_texto_ventana2)
@@ -511,9 +514,9 @@ def Ventana_Trazadores_Cubicos(frame, ventana2, ventana):
         y_llenados = False
         derivada_llenado = False
         for i in range(len(valores_x)):
-            if (valores_x[i] == ''):
+            if (valores_x[i] == '' or numero_valido(valores_x[i]) == False):
                 x_llenados = True
-            if (valores_y[i] == ''):
+            if (valores_y[i] == '' or numero_valido(valores_y[i]) == False):
                 y_llenados = True
        #Si estan vacios todos
         #Si estan vacios todos
@@ -522,35 +525,28 @@ def Ventana_Trazadores_Cubicos(frame, ventana2, ventana):
         else:
             
             if numero_valido(valores_x[0]) and numero_valido(valores_x[1]) and numero_valido(interpolacion):
-
+                x= sp.symbols('x')
+                valores_x = [float(valor) for valor in valores_x]
                 if funcion == '':    
                     valores_y = [float(valores) for valores in valores_y]
                     funcion = None
                 else:
                     booleano, funcion = Validar_y_Reemplazar_funcion(funcion)
-                    valores_y = None
-                """else:
-                    messagebox.showerror("¡ ERROR CRITICO !",message="Ingrese una  funcion valida")
-                    return"""
+                    
+                    if booleano == False:
+                        messagebox.showerror('ERROR', message='Ingrese una funcion valida')
+                        return
+                    valores_y = [funcion.subs(x, xi) for xi in valores_x]
 
-                if booleano == False:
-                    messagebox.showerror('ERROR', message='Ingrese una funcion valida')
-                    return
-                valores_x = [float(valor) for valor in valores_x]
+
                 interpolacion = float(interpolacion)
 
                 muestra_valores = ctk.CTkLabel(marco_muestra_valores,font= ("Currier",15,"bold"), justify= 'left', anchor='w', wraplength=1000)
                 
-                Px, valor_aprox, new_y, err_string = Newton_diferencias_dividas(valores_x, valores_y, funcion, interpolacion)
+                string = Trazadores_Cubicos(valores_x, valores_y, interpolacion, grados)
  #def Newton_recursivo(x_array, y_array=None, ecuacion = None, x_inter=Non:
-                result = ''
-                for i, (val_x, val_y) in enumerate(zip(valores_x, new_y), start=1):
-                    result += f"x{i} = {val_x}, y{i} = {val_y}\n"
 
-                if valores_y == None:
-                    muestra_valores.configure(text=result+f'evaluados en f(x) = {funcion}\n\n Con un polinomio interpolador de Px = {Px} con un valor aproximado de {valor_aprox}{err_string}')
-                else:
-                    muestra_valores.configure(text=result+f'\nCon un polinomio interpolador de Px = {Px} con un valor aproximado de {valor_aprox}{err_string}')
+                muestra_valores.configure(text=string)
 
                 if mostrar == True:
                     print(mostrar)
