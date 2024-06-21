@@ -1,17 +1,4 @@
 #!/usr/bin/env python3
-
-class Color:
-    PURPLE = '\033[95m'
-    CYAN = '\033[96m'
-    DARKCYAN = '\033[36m'
-    BLUE = '\033[94m'
-    GREEN = '\033[92m'
-    YELLOW = '\033[93m'
-    RED = '\033[91m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
-    END = '\033[0m'
-
 import sympy as sp
 import pandas as pd
 import numpy as np
@@ -262,59 +249,60 @@ def Ventana_Newton_Recursivo(frame, ventana2, ventana):
         valores_y = [ingreso.get() for ingreso in ingresos_y]
         interpolacion = ingreso_interpolacion.get()
         funcion = ingreso_funcion.get()
-
-        #Si estan vacios todos
-        if (valores_x[0] == '' or valores_x[1] == '' or interpolacion == '') or ((valores_y[0] == '' or valores_y[1] == '') and funcion == '') :
+        x_llenados = False
+        y_llenados = False
+        derivada_llenado = False
+        for i in range(len(valores_x)):
+            if (valores_x[i] == '' or numero_valido(valores_x[i]) == False):
+                x_llenados = True
+            if (valores_y[i] == '' or numero_valido(valores_y[i]) == False):
+                y_llenados = True
+       #Si estan vacios todos
+        if (x_llenados == True or interpolacion == '') or (y_llenados == True and funcion == '') :
             messagebox.showerror("¡ ERROR CRITICO !",message="Debe llenar todos los campos de forma correcta")
         else:
-            
-            if numero_valido(valores_x[0]) and numero_valido(valores_x[1]) and numero_valido(interpolacion):
 
-                if funcion == '':    
-                    valores_y = [float(valores) for valores in valores_y]
-                    funcion = None
-                else:
-                    booleano, funcion = Validar_y_Reemplazar_funcion(funcion)
-                    valores_y = None
-                """else:
-                    messagebox.showerror("¡ ERROR CRITICO !",message="Ingrese una  funcion valida")
-                    return"""
+
+            if funcion == '':    
+                valores_y = [float(valores) for valores in valores_y]
+                funcion = None
+            else:
+                booleano, funcion = Validar_y_Reemplazar_funcion(funcion)
+                valores_y = None
                 if booleano == False:
-                    messagebox.showerror("Error", message='Ingrese una funcion valida')
+                    messagebox.showerror("¡ ERROR CRITICO !",message="Ingrese una  funcion valida")
                     return
 
-                valores_x = [float(valor) for valor in valores_x]
-                interpolacion = float(interpolacion)
+            valores_x = [float(valor) for valor in valores_x]
+            interpolacion = float(interpolacion)
 
-                muestra_valores = ctk.CTkLabel(marco_muestra_valores,font= ("Currier",15,"bold"), justify= 'left', anchor='w')
-                
-                Px, valor_aprox, new_y = Newton_recursivo(valores_x,valores_y,funcion, interpolacion) #def Newton_recursivo(x_array, y_array=None, ecuacion = None, x_inter=Non:
-                result = ''
-                for i, (val_x, val_y) in enumerate(zip(valores_x, new_y), start=1):
-                    result += f"x{i} = {val_x}, y{i} = {val_y}\n"
+            muestra_valores = ctk.CTkLabel(marco_muestra_valores,font= ("Currier",15,"bold"), justify= 'left', anchor='w')
+            
+            Px, valor_aprox, new_y = Newton_recursivo(valores_x,valores_y,funcion, interpolacion) #def Newton_recursivo(x_array, y_array=None, ecuacion = None, x_inter=Non:
+            result = ''
+            for i, (val_x, val_y) in enumerate(zip(valores_x, new_y), start=1):
+                result += f"x{i} = {val_x}, y{i} = {val_y}\n"
 
-                if valores_y == None:
-                    muestra_valores.configure(text=result+f'evaluados en f(x) = {funcion}\n\n Con un polinomio interpolador de Px = {Px} con un valor aproximado de {valor_aprox}')
-                else:
-                    muestra_valores.configure(text=result+f'\nCon un polinomio interpolador de Px = {Px} con un valor aproximado de {valor_aprox}')
+            if valores_y == None:
+                muestra_valores.configure(text=result+f'evaluados en f(x) = {funcion}\n\n Con un polinomio interpolador de Px = {Px} con un valor aproximado de {valor_aprox}')
+            else:
+                muestra_valores.configure(text=result+f'\nCon un polinomio interpolador de Px = {Px} con un valor aproximado de {valor_aprox}')
 
-                if mostrar == True:
-                    muestra_valores.place(x=10,y=20)
+            if mostrar == True:
+                muestra_valores.place(x=10,y=20)
 
-                #Se desactiva el botón de Resolver
-                boton_resolver.configure(state=DISABLED)
+            #Se desactiva el botón de Resolver
+            boton_resolver.configure(state=DISABLED)
                 #Se activa el botón de Limpiar
-                boton_limpiar.configure(state=NORMAL)
+            boton_limpiar.configure(state=NORMAL)
                 
                 
                 #Se limpia los entry cuando ya se resulve por el metodo
-                [ingresos.delete(0, END) for ingresos in ingresos_x0]
-                [ingresos.delete(0, END) for ingresos in ingresos_y]
-                ingreso_interpolacion.delete(0, END)
-                ingreso_funcion.delete(0, END)
+            [ingresos.delete(0, END) for ingresos in ingresos_x0]
+            [ingresos.delete(0, END) for ingresos in ingresos_y]
+            ingreso_interpolacion.delete(0, END)
+            ingreso_funcion.delete(0, END)
 
-            else:
-                    messagebox.showerror("¡ ERROR CRITICO !",message="Asegurate de ingresar valores numericos en los campos correspondientes")
             
     
     y_pos = 400

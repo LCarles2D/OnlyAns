@@ -32,6 +32,8 @@ from Newton_diferencias_dividas import Volver,Ventana_Newton_diferencias
 from Newton_recursivo import Volver,Ventana_Newton_Recursivo
 from Trazadores_cubicos import Volver,Ventana_Trazadores_Cubicos
 from hermite import Volver,Ventana_Hermite
+from Simpson_Adaptativo import Volver,Ventana_Simpson_Adaptativo
+from Rungen_Kutta import Volver,Ventana_Rungen_Kutta
 
 #Henry
 from Metodo_EcuacionesCuadraticas import Volver, Ventana_Ecuaciones_Cuadraticas     
@@ -699,7 +701,7 @@ def Activar_Integracion_Numerica():
     ventana2.mainloop()
     
 
-def Activar_Metodos_Adaptativos():
+def Activar_Metodos_Adaptativos():#✅
     global ventana,ventana2
 
     ventana2 =ctk.CTk()
@@ -722,14 +724,14 @@ def Activar_Metodos_Adaptativos():
     frame.pack(expand=True, fill='both')
 
 
-    #se manda a llamar la funcion
+    Ventana_Simpson_Adaptativo(frame,ventana2,ventana)
 
     ventana.withdraw()
     ventana2.protocol("WM_DELETE_WINDOW", lambda: Volver(ventana2, ventana))
     ventana2.mainloop()
     
 
-def Activar_Cuadratura_Gaussiana():
+def Activar_Cuadratura_Gaussiana():#✅
     global ventana,ventana2
 
     ventana2 =ctk.CTk()
@@ -759,7 +761,7 @@ def Activar_Cuadratura_Gaussiana():
     ventana2.mainloop()
 
 
-def Activar_Metodo_Boyle():
+def Activar_Metodo_Boyle():#✅
     global ventana,ventana2
 
     ventana2 =ctk.CTk()
@@ -880,7 +882,7 @@ def Activar_Metodo_Taylor():
     ventana2.mainloop()
     
 
-def Activar_Metodo_Runge_Kutta():
+def Activar_Metodo_Runge_Kutta():#✅
     global ventana,ventana2
 
     ventana2 =ctk.CTk()
@@ -903,7 +905,7 @@ def Activar_Metodo_Runge_Kutta():
     frame.pack(expand=True, fill='both')
 
 
-    #se manda a llamar la funcion
+    Ventana_Rungen_Kutta(frame,ventana2,ventana)
 
     ventana.withdraw()
     ventana2.protocol("WM_DELETE_WINDOW", lambda: Volver(ventana2, ventana))

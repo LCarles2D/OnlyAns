@@ -225,7 +225,7 @@ def Ventana_Cuadratura_Gaussiana(frame,ventana2,ventana):
     etiqueta_ingreso_puntos = ctk.CTkLabel(marco_ingreso_valores,text = "Ingrese el punto",font=tipo_tamaño_letra_ventana2)
     etiqueta_ingreso_puntos.place(x=675,y=20)
 
-    etiqueta_ingreso_funcion = ctk.CTkLabel(marco_ingreso_valores,text = "Ingrese la funcion",font=tipo_tamaño_letra_ventana2)
+    etiqueta_ingreso_funcion = ctk.CTkLabel(marco_ingreso_valores,text = "Ingrese la integral",font=tipo_tamaño_letra_ventana2)
     etiqueta_ingreso_funcion.place(x=1000,y=20)
 
     
@@ -301,10 +301,10 @@ def Ventana_Cuadratura_Gaussiana(frame,ventana2,ventana):
                     puntos = float(puntos)
                     funcion = funcion_str
 
-                    muestra_valores = ctk.CTkLabel(marco_muestra_valores,font=tipo_tamaño_letra_ventana2,anchor="w", justify="left")
+                    muestra_valores = ctk.CTkLabel(marco_muestra_valores,font=("Currier",14,"bold"),anchor="w", justify="left")
                                       
 
-                    muestra_raiz = ctk.CTkLabel(marco_muestra_valores,font=tipo_tamaño_letra_ventana2,anchor="w", justify="left")
+                    muestra_raiz = ctk.CTkLabel(marco_muestra_valores,font=("Currier",14,"bold"),anchor="w", justify="left")
 
                     
 

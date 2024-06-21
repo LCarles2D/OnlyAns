@@ -183,9 +183,9 @@ def Ventana_Interpolacion_Lineal(frame, ventana2, ventana):
                     booleano, funcion = Validar_y_Reemplazar_funcion(funcion)
                     print(booleano, funcion)
                     valores_y = None
-                """else:
-                    messagebox.showerror("¡ ERROR CRITICO !",message="Ingrese una  funcion valida")
-                    return"""
+                    if booleano == False:
+                        messagebox.showerror("¡ ERROR CRITICO !",message="Ingrese una  funcion valida")
+                        return
 
                 valores_x = [float(valor) for valor in valores_x]
                 interpolacion = float(interpolacion)

@@ -786,7 +786,7 @@ def Ventana_Extrapolacion_Richardson(frame,ventana2,ventana):
 
                     if mostrar == True:
                         muestra_valores.place(x=60,y=100)
-                        muestra_niveles.place(x=500,y=100)
+                        muestra_niveles.place(x=300,y=100)
 
                         #Se desactiva el botón de Resolver
                         boton_resolver.configure(state=DISABLED)

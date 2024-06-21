@@ -115,7 +115,7 @@ def Ventana_Metodo_Boyle(frame,ventana2,ventana):
     etiqueta_ingreso_valor_b = ctk.CTkLabel(marco_ingreso_valores,text = "Ingrese el valor de b",font=tipo_tamaño_letra_ventana2)
     etiqueta_ingreso_valor_b.place(x=400,y=20)
 
-    etiqueta_ingreso_funcion = ctk.CTkLabel(marco_ingreso_valores,text = "Ingrese la funcion",font=tipo_tamaño_letra_ventana2)
+    etiqueta_ingreso_funcion = ctk.CTkLabel(marco_ingreso_valores,text = "Ingrese la integral",font=tipo_tamaño_letra_ventana2)
     etiqueta_ingreso_funcion.place(x=1000,y=20)
 
     

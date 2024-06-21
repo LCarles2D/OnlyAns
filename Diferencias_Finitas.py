@@ -60,7 +60,7 @@ def Diferencias_Finitas(funcion,punto,h,hacia_atras,hacia_adelante,centrales,tre
     Vv = d(punto)
 
 
-    valores_mostrar = f"Funcion : {funcion}\n\n\nPunto : {punto}\n\n\nh : {h}\n\n\nx --> {valores_x}\n\n\ny --> {valores_y}"
+    valores_mostrar = f"Funcion : {funcion}\n\n\nPunto : {punto}\n\n\nh : {h}\n\n\nx --> {valores_x}\n\n"
 
     try:
     
@@ -529,7 +529,7 @@ def Ventana_Diferencias_Finitas(frame,ventana2,ventana):
 
                     if mostrar == True:
                         muestra_titulo.place(x=450,y=10)
-                        muestra_valores.place(x=60,y=100)
+                        muestra_valores.place(x=60,y=200)
                         muestra_primer_formula.place(x=875,y=100)
                         muestra_segunda_formula.place(x=875,y=250)
 

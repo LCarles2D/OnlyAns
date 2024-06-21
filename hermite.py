@@ -1,17 +1,5 @@
 #!/usr/bin/env python3
 
-class Color:
-    PURPLE = '\033[95m'
-    CYAN = '\033[96m'
-    DARKCYAN = '\033[36m'
-    BLUE = '\033[94m'
-    GREEN = '\033[92m'
-    YELLOW = '\033[93m'
-    RED = '\033[91m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
-    END = '\033[0m'
-
 import sympy as sp
 import math
 import pandas as pd
@@ -351,13 +339,13 @@ def Ventana_Hermite(frame, ventana2, ventana):
         y_llenados = False
         derivada_llenado = False
         for i in range(len(valores_x)):
-            if (valores_x[i] == ''):
+            if (valores_x[i] == '' or numero_valido(valores_x[i]) == False):
                 x_llenados = True
-            if (valores_y[i] == ''):
+            if (valores_y[i] == '' or numero_valido(valores_x[i]) == False):
                 y_llenados = True
         for i in range(0,cantidad_derivadas):
             for j in range(len(valores_x)):
-                if valores_derivada[i][j] == '':
+                if valores_derivada[i][j] == '' or numero_valido(valores_derivada[i][j]) == False:
                     derivada_llenado = True
         
         
