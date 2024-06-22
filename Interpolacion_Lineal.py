@@ -19,20 +19,20 @@ def interpolacion_Lineal(xk,yk, inter_point, ecuacion = None):
     x = sp.symbols("x")
     if ecuacion != None:
         yk = [ecuacion.subs(x, xi).evalf() for xi in xk]
-
   
     fx = yk
     try: 
         Px = ((fx[1] - fx[0])/(xk[1] - xk[0])) * (x - xk[0]) + fx[0]
         Px = sp.simplify(Px)
         print(xk[1] - xk[0])
-
-        valor_aprox = Px.subs(x, inter_point).evalf()
         mostrar = True
-        return Px, valor_aprox
+        valor_aprox = Px.subs(x, inter_point).evalf()
+
+        return Px, valor_aprox, ''
     except ZeroDivisionError:
         messagebox.showerror("¡ ERROR CRITICO !",message="Se ha produciodo una division por cero, esto puede ser porque has ingresado el mismo valor de x si desea ocupar el mismo punto ocupa el polinomio de Hermite")
         mostrar = False
+        return
 
 
 color_fondo_boton_ventana2 = "#2c2b4b"
@@ -168,6 +168,11 @@ def Ventana_Interpolacion_Lineal(frame, ventana2, ventana):
         interpolacion = ingreso_interpolacion.get()
         funcion = ingreso_funcion.get()
 
+        for i in range(len(valores_x) - 1):
+            if valores_x[i] == valores_x[i+1]:
+                messagebox.showerror("¡ ERROR CRITICO !",message="No repita el valor de x")
+                return  
+
         #Si estan vacios todos
         if (valores_x[0] == '' or valores_x[1] == '' or interpolacion == '') or ((valores_y[0] == '' or valores_y[1] == '') and funcion == '') :
             messagebox.showerror("¡ ERROR CRITICO !",message="Debe llenar todos los campos de forma correcta")
@@ -175,8 +180,13 @@ def Ventana_Interpolacion_Lineal(frame, ventana2, ventana):
             
             if numero_valido(valores_x[0]) and numero_valido(valores_x[1]) and numero_valido(interpolacion):
 
-                if funcion == '':    
+                if funcion == '':
+                    print(numero_valido(valores_y[0]))    
+                    if not numero_valido(valores_y[0])  or not numero_valido(valores_y[1]):
+                         messagebox.showerror("¡ ERROR CRITICO !",message="Asegurate de ingresar valores numericos en los campos correspondientes")
+                         return
                     valores_y = [float(valores) for valores in valores_y]
+
                     funcion = None
                 else:
                     print('La funcion', funcion)
@@ -192,10 +202,10 @@ def Ventana_Interpolacion_Lineal(frame, ventana2, ventana):
 
                 muestra_valores = ctk.CTkLabel(marco_muestra_valores,font= ("Currier",15,"bold"), justify= 'left', anchor='w')
                 
-                Px, valor_aprox = interpolacion_Lineal(valores_x,valores_y,interpolacion,funcion)
+                Px, valor_aprox, text = interpolacion_Lineal(valores_x,valores_y,interpolacion,funcion)
                 print(Px, valor_aprox)
                 if valores_y == None:
-                    muestra_valores.configure(text=f'x1 = {valores_x[0]}\n\nx2 = {valores_x[1]}\n\nevaluados en f(x) = {funcion}\n\n Con un polinomio interpolador de Px = {Px} con un valor aproximado de {valor_aprox} con un punto de interpolacion de {interpolacion}')
+                    muestra_valores.configure(text=f'x1 = {valores_x[0]}\n\nx2 = {valores_x[1]}\n\nevaluados en f(x) = {funcion}\n\n Con un polinomio interpolador de Px = {Px} con un valor aproximado de {valor_aprox} con un punto de interpolacion de {interpolacion} {text}')
                 else:
                     muestra_valores.configure(text=f'x1 = {valores_x[0]}\n\nx2 = {valores_x[1]}\n\ny1 = {valores_y[0]}\n\ny2 = {valores_y[1]}\n\nCon un polinomio interpolador de Px = {Px} con un valor aproximado de {valor_aprox}')
 

@@ -26,7 +26,13 @@ def Trazadores_Cubicos(valores_x,valores_y, punto_evaluar,grado):
     #Paso 1  : Identifico los intervalos
     intervalos = [(valores_x[i], valores_x[i + 1]) for i in range(len(valores_x) - 1)]
     output_text += f"Intervalos : {intervalos}\n"
+    
 
+    for i in range(len(valores_x) - 1):
+        if valores_x[i] == valores_x[i+1]:
+            messagebox.showerror("¡ ERROR CRITICO !",message="No repita el valor de x")
+            return
+            
 
     if grado == 0:
        output_text += "\n---------Grado Cero -----------\n"

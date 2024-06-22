@@ -40,12 +40,14 @@ def hermite(x_array, y_array=None, ecuacion=None,inter_point=None, derivates=Non
 
     x= sp.symbols("x")
     fx_array = y_array
-    dx_array = derivates_array
+    dx_array = derivates_array or []
+    print('holad',dx_array)
     if y_array == None:
         fx_array = [ecuacion.subs(x,xi).evalf() for xi in x_array]
         if derivates != None:
             for xi in x_array:
                 dx_array.append([derivate(ecuacion, xi, orden, x_array, None) for orden in range(1, derivates+1)])
+    print('deri', dx_array)
     contador = [0 for _ in range(len(dx_array))]
     print(f"derivadas: {dx_array}")
     for i in range(len(dx_array)):
@@ -80,9 +82,17 @@ def hermite(x_array, y_array=None, ecuacion=None,inter_point=None, derivates=Non
 
     Px = sp.expand(Px)
     Px = sp.simplify(Px)
-    mostrar = True 
-    print(Px, Px.subs(x, inter_point), fx_array)
-    return Px, Px.subs(x, inter_point).evalf(), fx_array
+
+    mostrar = True
+    valor_aprox = Px.subs(x, inter_point).evalf()
+    if ecuacion == None:
+        return Px, valor_aprox, ''
+    valor_verdadero = ecuacion.subs(x, inter_point).evalf()
+
+    Ea = ((valor_verdadero - valor_aprox)/(valor_verdadero))*100
+
+
+    return Px, valor_verdadero, f'\n\nError porcentual: {Ea}'
 
 color_fondo_boton_ventana2 = "#2c2b4b"
 color_texto_ventana2 = "white"
@@ -195,10 +205,11 @@ def Ventana_Hermite(frame, ventana2, ventana):
     def agregar_derivadas():
         global cantidad_derivadas
         global mostrar_y
-        etiqueta_numero_derivadas.configure(text=cantidad_derivadas+1)
+   
 
-        if cantidad_derivadas > 2:
+        if cantidad_derivadas > 1:
             return
+        etiqueta_numero_derivadas.configure(text=cantidad_derivadas+1)  
         if mostrar_y == False:
             ingresos_derivadas[cantidad_derivadas][2] = True
             cantidad_derivadas += 1 
@@ -332,6 +343,7 @@ def Ventana_Hermite(frame, ventana2, ventana):
         valores_x = [ingreso.get() for ingreso in ingresos_x0]
         valores_y = [ingreso.get() for ingreso in ingresos_y]
         valores_derivada = [[ingreso.get() for ingreso in ingresos_derivadas[i][0]] for i in range(len(ingresos_derivadas))]
+        print('DERIVADAS',valores_derivada)
         interpolacion = ingreso_interpolacion.get()
         funcion = ingreso_funcion.get()
         derivadas = cantidad_derivadas
@@ -339,17 +351,19 @@ def Ventana_Hermite(frame, ventana2, ventana):
         y_llenados = False
         derivada_llenado = False
         for i in range(len(valores_x)):
+            print(valores_y[i])
             if (valores_x[i] == '' or numero_valido(valores_x[i]) == False):
                 x_llenados = True
-            if (valores_y[i] == '' or numero_valido(valores_x[i]) == False):
+            if (valores_y[i] == '' or numero_valido(valores_y[i]) == False):
                 y_llenados = True
+                print('y_llenados de manera inccorrecta')
         for i in range(0,cantidad_derivadas):
             for j in range(len(valores_x)):
                 if valores_derivada[i][j] == '' or numero_valido(valores_derivada[i][j]) == False:
                     derivada_llenado = True
         
-        
-
+            
+   
 # Limitar el número de sub-arrays a procesar
         valores_derivada = valores_derivada[:cantidad_derivadas]
 
@@ -377,15 +391,16 @@ def Ventana_Hermite(frame, ventana2, ventana):
                     valores_y = [float(valores) for valores in valores_y]
                     funcion = None
                     derivadas = None
-                    valores_derivada = None
+                    
                 else:
                     booleano, funcion = Validar_y_Reemplazar_funcion(funcion)
                     valores_y = None
+                    valores_derivada = None
                     if booleano == False:
                         messagebox.showerror('ERROR', message='Ingrese una funcion valida')
                         return
 
-
+                print("DERIVADAAAAAAS", derivadas)
                 valores_x = [float(valor) for valor in valores_x]
                 print(valores_derivada)
                 interpolacion = float(interpolacion)

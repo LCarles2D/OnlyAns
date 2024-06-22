@@ -247,6 +247,10 @@ def Ventana_Rungen_Kutta(frame, ventana2, ventana):
                 valores_y = float(valores_y)
                 Ea = float(Ea)
 
+                if Ea <= 0:
+                    messagebox.showerror("¡ ERROR CRITICO !",message="h debe ser mayor a 0")
+                    return
+
                 if valores_x[0] > valores_x[1]:
                         messagebox.showerror("¡ ERROR CRITICO !",message="El valor de 'x1' debe de ser mayor que 'x2' ")
                         return

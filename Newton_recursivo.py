@@ -261,7 +261,9 @@ def Ventana_Newton_Recursivo(frame, ventana2, ventana):
         if (x_llenados == True or interpolacion == '') or (y_llenados == True and funcion == '') :
             messagebox.showerror("¡ ERROR CRITICO !",message="Debe llenar todos los campos de forma correcta")
         else:
-
+            if not numero_valido(interpolacion):
+                messagebox.showerror("¡ ERROR CRITICO !",message="Debe llenar todos los campos de forma correcta")
+                return 
 
             if funcion == '':    
                 valores_y = [float(valores) for valores in valores_y]

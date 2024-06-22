@@ -27,6 +27,7 @@ from hermite import Volver, Ventana_Hermite
 from Trazadores_cubicos import Volver, Ventana_Trazadores_Cubicos
 from Simpson_adaptativo import Volver, Ventana_Simpson_Adaptativo
 from Rungen_Kutta import Volver, Ventana_Rungen_Kutta
+from Metodo_Integracion_Numerica import Volver, Ventana_Metodo_Integracion
 
 #Creo una segunda ventana-------------------------------------------------------------------------------
 
@@ -654,21 +655,16 @@ def Activar_Extrapolacion_Richardson():
 
 def Activar_Integracion_Numerica():
     global ventana,ventana2
-
     ventana2 =ctk.CTk()
-    ventana2.iconbitmap("Imagenes/icono.ico")
     ventana2.geometry("1500x800")
-    ventana2.state("zoomed")
     ventana2.resizable(False,False)
     ventana2.protocol("WM_DELETE_WINDOW", "onexit")  # desactivar el boton de cerrar
     ventana2.title("Interpolacion Numerica") 
 
     
-    # Deshabilitar el botón de minimizar
-    hwnd = ctypes.windll.user32.GetParent(ventana2.winfo_id())
-    current_style = ctypes.windll.user32.GetWindowLongW(hwnd, -16)
-    new_style = current_style & ~0x00020000 & ~0x00010000
-    ctypes.windll.user32.SetWindowLongW(hwnd, -16, new_style)
+    ventana.update_idletasks()  # Asegúrate de que la ventana está completamente creada
+    window_id = ventana.winfo_id()
+    os.system(f'wmctrl -ir {window_id} -b add,maximized_horz,maximized_vert') 
 
     #Creo un frame
     frame = ctk.CTkFrame(master=ventana2)
@@ -676,7 +672,8 @@ def Activar_Integracion_Numerica():
 
 
     #se manda a llamar la funcion
-
+    Ventana_Metodo_Integracion(frame,ventana2,ventana)
+    
     ventana.withdraw()
     ventana2.protocol("WM_DELETE_WINDOW", lambda: Volver(ventana2, ventana))
     ventana2.mainloop()
@@ -954,7 +951,7 @@ def Ventana_Principal():
     fondo = PhotoImage(file="Imagenes/3.png")
     label_fondo = Label(ventana, image=fondo)
     label_fondo.image = fondo 
-    label_fondo.place(x=0, y=0, relwidth=1, relheight=1)
+    label_fondo.place(x=0, y=0)
 
     #ventana.iconbitmap("Imagenes/icono.ico")
     ventana.protocol("WM_DELETE_WINDOW", "onexit")  # desactivar el boton de cerrar

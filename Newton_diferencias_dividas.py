@@ -96,7 +96,7 @@ def Newton_diferencias_dividas(x_array, y_array=None, ecuacion=None, x1 = None):
 
     error_t = ((ecuacion_derivada.subs(x,x1).evalf())/sp.factorial(grado+1)) * factor
     mostrar = True
-    return Px, valor_verdadero,fx_array, f'Con un error porcentual de {Ea} y un error teorico de {error_t}'
+    return Px, valor_verdadero,fx_array, f'\n\nError porcentual: {Ea}\n\nError teorico: {error_t}'
 
 
 color_fondo_boton_ventana2 = "#2c2b4b"
