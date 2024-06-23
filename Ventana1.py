@@ -41,8 +41,10 @@ from Metodo_Tartaglia import Volver, Ventana_Metodo_Tartaglia
 from Metodo_Ferrari import Volver, Ventana_Metodo_Ferrari                           
 from Metodo_Horner import Volver, Ventana_Metodo_Horner                             
 from Metodo_Bairstow import Volver, Ventana_Metodo_Bairstow                         
-from Metodo_Muller import Volver, Ventana_Metodo_Muller                             
-
+from Metodo_Muller import Volver, Ventana_Metodo_Muller  
+from Metodo_Taylor import Volver,Ventana_Metodo_Taylor     
+from Metodo_multipasos import Volver,Ventana_Metodo_Multipasos 
+from Metodo_Integracion_Numerica import Volver,Ventana_Metodo_Integracion                   
 
 
 
@@ -671,7 +673,7 @@ def Activar_Extrapolacion_Richardson():#✅
     ventana2.mainloop()
     
 
-def Activar_Integracion_Numerica():
+def Activar_Integracion_Numerica():#✅
     global ventana,ventana2
 
     ventana2 =ctk.CTk()
@@ -694,7 +696,7 @@ def Activar_Integracion_Numerica():
     frame.pack(expand=True, fill='both')
 
 
-    #se manda a llamar la funcion
+    Ventana_Metodo_Integracion(frame,ventana2,ventana)
 
     ventana.withdraw()
     ventana2.protocol("WM_DELETE_WINDOW", lambda: Volver(ventana2, ventana))
@@ -851,7 +853,7 @@ def Activar_Metodo_Euler_Modificado():#✅
     ventana2.mainloop()
     
 
-def Activar_Metodo_Taylor():
+def Activar_Metodo_Taylor():#✅
     global ventana,ventana2
 
     ventana2 =ctk.CTk()
@@ -874,7 +876,7 @@ def Activar_Metodo_Taylor():
     frame.pack(expand=True, fill='both')
 
 
-    #se manda a llamar la funcion
+    Ventana_Metodo_Taylor(frame,ventana2,ventana)
 
     ventana.withdraw()
     ventana2.protocol("WM_DELETE_WINDOW", lambda: Volver(ventana2, ventana))
@@ -912,7 +914,7 @@ def Activar_Metodo_Runge_Kutta():#✅
     ventana2.mainloop()
     
     
-def Activar_Metodo_Multipasos():
+def Activar_Metodo_Multipasos():#✅
     global ventana,ventana2
 
     ventana2 =ctk.CTk()
@@ -935,7 +937,7 @@ def Activar_Metodo_Multipasos():
     frame.pack(expand=True, fill='both')
 
 
-    #se manda a llamar la funcion
+    Ventana_Metodo_Multipasos(frame,ventana2,ventana)
 
     ventana.withdraw()
     ventana2.protocol("WM_DELETE_WINDOW", lambda: Volver(ventana2, ventana))

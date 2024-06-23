@@ -218,8 +218,16 @@ def Ventana_Interpolacion_Lagrange(frame, ventana2, ventana):
         interpolacion = ingreso_interpolacion.get()
         funcion = ingreso_funcion.get()
 
+        x_llenados = False
+        y_llenados = False
+        for i in range(len(valores_x)):
+            if (valores_x[i] == '' or numero_valido(valores_x[i]) == False):
+                x_llenados = True
+            if (valores_y[i] == ''or numero_valido(valores_y[i]) == False):
+                y_llenados = True
+
         #Si estan vacios todos
-        if (valores_x[0] == '' or valores_x[1] == '' or interpolacion == '') or ((valores_y[0] == '' or valores_y[1] == '') and funcion == '') :
+        if (x_llenados == True or interpolacion == '') or ((y_llenados) and funcion == '') :
             messagebox.showerror("¡ ERROR CRITICO !",message="Debe llenar todos los campos de forma correcta")
         else:
             
@@ -233,9 +241,9 @@ def Ventana_Interpolacion_Lagrange(frame, ventana2, ventana):
                     booleano, funcion = Validar_y_Reemplazar_funcion(funcion)
                     print(booleano, funcion)
                     valores_y = None
-                """else:
-                    messagebox.showerror("¡ ERROR CRITICO !",message="Ingrese una  funcion valida")
-                    return"""
+                    if booleano == False:
+                        messagebox.showerror('ERROR', message='Debe de llenar todos los campos de forma correcta')
+                        return
 
                 valores_x = [float(valor) for valor in valores_x]
                 interpolacion = float(interpolacion)

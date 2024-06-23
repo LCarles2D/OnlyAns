@@ -210,21 +210,65 @@ def validar_igualdad(expresion):
     
     return funcion, error
 
-
-def convert_funcion_terminos_x(expresion):
-    x = sp.symbols('x')
-    Error  = ""
+def validar_funcion_x(expresion):
+    Error = ""
     while True:
         try:
             funcion = sp.sympify(expresion)
             
-            #se verifica que la expresión solo contiene la variable 'x'
-            if not funcion.free_symbols == {x}:
-                Error = "La función debe estar en términos de la variable x."
-                return funcion, Error                  
+            # Verificar que todas las variables en la expresión sean simbólicas
+            if not all(isinstance(sym, sp.Symbol) for sym in funcion.free_symbols):
+                Error = "La función debe contener solo variables simbólicas."
+                return funcion, Error
+            # Si no hay errores, retornamos la función y un error vacío
+            return funcion, Error
         except (sp.SympifyError, TypeError, ValueError):
-            Error = "Entrada inválida. Por favor, ingrese una función válida en términos de x."
-            return expresion, Error      
+            Error = "Entrada inválida. Por favor, ingrese una función válida en términos de variables simbólicas."
+            return expresion, Error   
+        
+def validar_funcion_xyz(expresion: str):
+    # Definir las variables simbólicas posibles
+    x, y, z = sp.symbols('x y z')
+    variables_validas = {x, y, z}
+    Error = ""
+
+    try:
+        # Convertir la expresión a una función simbólica
+        funcion = sp.sympify(expresion)
+        
+        # Verificar que todas las variables en la expresión sean simbólicas y sean x, y o z
+        if not funcion.free_symbols.issubset(variables_validas):
+            Error = ("La función debe contener solo las variables x, y o z.")
+            return None, [], Error
+        
+        # Obtener las variables válidas encontradas en la expresión
+        lista_variables = list(funcion.free_symbols)
+        
+        return funcion, lista_variables, Error
+    
+    except (sp.SympifyError, TypeError, ValueError) as e:
+        Error = f"Error: validar_funcion_xyz: {e}"
+        return None, [], Error
+
+def evaluar_funcion(funcion: sp.Expr, valores: dict) -> sp.Expr:
+    # Evaluar la función en los valores dados
+    resultado = funcion.subs(valores)
+    return resultado        
+
+"""
+expresion_y = "y**2 + 3*y + 2"
+funcion_y, mensaje_y = validar_y_convertir_funcion(expresion_y)
+print(mensaje_y)
+
+if funcion_y:
+    puntos_y = [1.0, 2.0, 3.0]
+    for punto in puntos_y:
+        try:
+            valor_evaluado_y = evaluar_funcion(funcion_y, {sp.Symbol('y'): punto})
+            print(f"y = {punto}, f(y) = {valor_evaluado_y.evalf()}")
+        except Exception as e:
+            print(f"Error al evaluar en y = {punto}: {e}")
+"""
 
 def convert_funcion_x(expresion):
     x = sp.symbols('x')

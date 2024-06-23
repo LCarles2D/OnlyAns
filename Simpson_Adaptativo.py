@@ -176,6 +176,9 @@ def Ventana_Simpson_Adaptativo(frame, ventana2, ventana):
                         return
                 valores_x = [float(valor) for valor in valores_x]
                 Ea = float(Ea)
+                if Ea <= 0:
+                    messagebox.showerror("¡ ERROR CRITICO !",message="La tolerancia debe de ser un valor mayor a 0 ")
+                    return
 
                 if valores_x[0] > valores_x[1]:
                         messagebox.showerror("¡ ERROR CRITICO !",message="El valor de 'b' debe de ser mayor que 'a' ")
