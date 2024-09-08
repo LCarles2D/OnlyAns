@@ -1,0 +1,9 @@
+Se deben instalar estas librerias:
+
+pip install sympy
+pip install pandas
+pip install numpy
+pip install matplotlib
+pip install pillow
+pip install customtkinter
+pip install ipython
